@@ -1,0 +1,12 @@
+---
+name: My Rosie Application
+category: Interactive Apps
+subcategory: Demo Applications
+role: batch_connect
+description: |
+  This app will launch a demo server in a Singularity container (virtual machine) on a Rosie computer node.
+  
+  The interface can either be interacted with directly, or the API can be accessed via internal nodes on Rosie using account 
+  credentials to connect remotely.
+  
+  Only one T4 GPU will be requested by default.

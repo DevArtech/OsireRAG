@@ -1,0 +1,8 @@
+.vscode
+.pytest_cache
+__pycache__
+.rosierag*
+.env
+Pipfile.lock
+nltk_data
+Llama*

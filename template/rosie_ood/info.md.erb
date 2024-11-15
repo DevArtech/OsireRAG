@@ -1,0 +1,6 @@
+<% require 'json'; 
+data = JSON.parse(user_defined_context_file.read); %>
+| Execution Context  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Value |
+| ---------------------------- | ----------- |
+| Number of Nvidia T4 GPUs      | 1 |
+| Number of hours   | <%= data['bc_num_hours'] %>        |

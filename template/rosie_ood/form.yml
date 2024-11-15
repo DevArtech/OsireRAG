@@ -1,0 +1,81 @@
+# Batch Connect app configuration file
+#
+# @note Used to define the submitted cluster, title, description, and
+#   hard-coded/user-defined attributes that make up this Batch Connect app.
+---
+
+# **MUST** set cluster id here that matches cluster configuration file located
+# under /etc/ood/config/clusters.d/*.yml
+# @example Use the Owens cluster at Ohio Supercomputer Center
+#     cluster: "owens"
+cluster: "rosie"
+
+# Define attribute values that aren't meant to be modified by the user within
+# the Dashboard form
+attributes:
+  # Set the corresponding modules that need to be loaded for Jupyter to run
+  #
+  # @note It is called within the batch job as `module load <modules>` if
+  #   defined
+  # @example Do not load any modules
+  #     modules: ""
+  # @example Using default python module
+  #     modules: "python"
+  # @example Using specific python module
+  #     modules: "python/3.5"
+  # @example Using combination of modules
+  #     modules: "python/3.5 cuda/8.0.44"
+  modules: ""
+  bc_queue: "teaching"
+  
+  var_type_of_use:
+     label: "Job Description"
+     widget: "select"
+     required: true
+     help: "What are you working on?"
+     options:
+        - ["Classwork", "Class"]
+        - ["Research", "Research"]
+        - ["Independent Study", "IS"]
+        - ["Senior Design", "Senior Design"]
+        - ["AI Club Project", "AI"]
+        - ["Prefer Not to Say/Other", "pnts"]
+
+  var_course_code:
+     label: "Which course?"
+     widget: "select"
+     required: true
+     options:
+        - ["CS2300 Computational Science", "CS2300"]
+        - ["CS2400 Introduction to AI", "CS2400"]
+        - ["CS3400 Machine Learning", "CS3400"]
+        - ["CS3300 Introduction to Data Science", "CS3300"]
+        - ["CS3310 Data Science Practicum", "CS3310"]
+        - ["CS3450 Deep Learning", "CS3450"]
+        - ["CS4981 GPU Programming", "CS4981"]
+        - ["CS3851 Algorithms", "CS3851"]
+        - ["Other", "Other"]
+  var_lab_number:
+     label: "Lab Number"
+     widget: "number_field"
+     required: false
+     min: 1
+     max: 10
+     step: 1
+     cacheable: false
+
+# All of the attributes that make up the Dashboard form (in respective order),
+# and made available to the submit configuration file and the template ERB
+# files
+#
+# @note You typically do not need to modify this unless you want to add a new
+#   configurable value
+# @note If an attribute listed below is hard-coded above in the `attributes`
+#   option, then it will not appear in the form page that the user sees in the
+#   Dashboard
+form:
+  - modules
+  - bc_num_hours
+  - var_type_of_use
+  - var_course_code
+  - var_lab_number

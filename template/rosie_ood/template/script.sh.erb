@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Benchmark info
+echo "TIMING - Starting main script at: $(date) on $(hostname)"
+
+# Set working directory to home directory
+cd "${HOME}"
+
+# Benchmark info
+echo "TIMING - Starting Rosie FastAPI Template at: $(date)"
+
+if [ "x$PS1" == "x" ] ; then
+  export PS1="\[\033]0;\u@\h:\w\007\]\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+fi
+
+set -x
+
+MODIFIED_URL=$(echo "$BASE_URL" | sed -e 's#^/node/##' -e 's#/[^/]*$##')
+
+# Run Singularity with the port mapping
+singularity exec --nv --network-args portmap=$PORT:$PORT -B /data:/data /path/to/your/container/here.sif uvicorn --app-dir /var/task/app main:app --port $PORT --host $MODIFIED_URL

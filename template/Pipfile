@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"fastapi[standard]" = "*"
+pydantic-settings = "*"
+fastapi-cors = "*"
+
+[dev-packages]
+black = "*"
+flake8 = "*"
+uvicorn = "*"
+
+[requires]
+python_version = "3.12"
+
+[scripts]
+start = "uvicorn --app-dir app main:app --reload --port 8080 --host localhost"
+test = "python -m pytest tests/unit.py"
+format = "python -m black ."
+lint = "python -m flake8 src"
