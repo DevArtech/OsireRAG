@@ -1,3 +1,20 @@
+"""
+Module: api.py
+Connects all the routers into the main API router, which is connected to the main FastAPI app.
+
+Classes:
+- None
+
+Functions:
+- None
+
+Usage:
+- Import the api_router from this module into the main FastAPI app.
+
+Author: Adam Haile
+Date: 10/16/2024
+"""
+
 from fastapi import APIRouter
 
 from routes import (

@@ -1,9 +1,10 @@
+from pydantic import BaseModel
 from typing import List, Tuple
 
 from core.models.chunker import Chunk
 
 
-class ReciprocalRankFusion:
+class ReciprocalRankFusion(BaseModel):
     def ranks(
         self, ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int = 10
     ) -> List[Tuple[Chunk, float]]:

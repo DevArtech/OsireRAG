@@ -1,114 +1,366 @@
+"""
+Module: knowledge_base.py
+
+Contains the KnowledgeBase of the RosieRAG system. Utilizes all submodules to create a centralized knowledge base.
+
+Classes:
+- KnowledgeBase: A class representing the RosieRAG knowledge base.
+- SearchParameters: Dataclass model for search parameters.
+- DocumentArgs: Dataclass model for document arguments.
+
+Functions:
+- None
+
+Usage:
+- Import the KnowledgeBase class from this module into other modules that require a knowledge base.
+
+Author: Adam Haile
+Date: 10/16/2024
+"""
+
 import os
 from pydantic import BaseModel
+from dataclasses import dataclass, field
 from fastapi import UploadFile
 from typing import Dict, Any, List, Tuple
 
+from core.logger import logger
 from core.models.documents import Document
+from core.models.web import WebScraper
 from core.models.chunker import DocumentChunker, Chunk
-from core.models.embedding import DocumentEmbedder
+from core.models.embedding import DocumentEmbedder, embedder
 from core.models.vectorstore import VectorstoreManager, VectorstoreSearchParameters
 from core.models.term_freq_retriever import ChunkTokenizer, BM25Model
 from core.models.rrf import ReciprocalRankFusion
 from core.models.reranker import Reranker
 
 
-class SearchParameters(BaseModel):
+@dataclass
+class SearchParameters:
+    """
+    Dataclass model for search parameters.
+
+    Attributes:
+    - query: str: The search query.
+    - n_results: int: The number of results to return.
+    - filter: Dict[str, Any]: A filter for the search.
+    - rerank: bool: Whether to rerank the results.
+
+    Methods:
+    - None
+
+    Usage:
+    - Create an instance of this class to represent search parameters.
+
+    Author: Adam Haile
+    Date: 10/16/2024
+    """
+
     query: str
     n_results: int = 10
-    filter: Dict[str, Any] = {}
+    filter: Dict[str, Any] = field(default_factory=dict)
     rerank: bool = True
 
 
-class KnowledgeBase:
-    def __init__(self):
-        self.chunker = DocumentChunker()
-        self.embedder = DocumentEmbedder()
-        self.vs_manager = VectorstoreManager()
-        self.tokenizer = ChunkTokenizer()
-        self.bm25 = BM25Model()
-        self.rrf = ReciprocalRankFusion()
-        self.reranker = Reranker()
+@dataclass
+class DocumentArgs:
+    """
+    Dataclass model for document arguments.
 
-    def create_kb(self, project_name: str, vectorstore_name: str, model_name: str):
-        project_path = f"./.rosierag/{project_name}"
+    Attributes:
+    - project_name: str: The project name.
+    - vectorstore_name: str: The vectorstore name.
+    - model_name: str: The model name.
+    - n: int: The number of sentences per chunk.
+
+    Methods:
+    - None
+
+    Usage:
+    - Create an instance of this class to represent document arguments.
+
+    Author: Adam Haile
+    Date: 10/16/2024
+    """
+
+    project_name: str
+    vectorstore_name: str
+    model_name: str
+    n: int = 7
+
+
+class KnowledgeBase(BaseModel):
+    """
+    A class representing the RosieRAG knowledge base.
+
+    Attributes:
+    - chunker: DocumentChunker: The document chunker.
+    - scraper: WebScraper: The web scraper.
+    - embedder: DocumentEmbedder: The document embedder.
+    - vs_manager: VectorstoreManager: The vectorstore manager.
+    - tokenizer: ChunkTokenizer: The chunk tokenizer.
+    - bm25: BM25Model: The BM25 model.
+    - rrf: ReciprocalRankFusion: The reciprocal rank fusion model.
+    - reranker: Reranker: The reranker model.
+
+    Methods:
+    - _validate_project: Validates a project exists.
+    - create_kb: Creates a knowledge base.
+    - add_documents: Adds documents to the knowledge base.
+    - add_webpages: Adds webpages to the knowledge base.
+    - add_project: Adds an entire project to the knowledge base.
+    - search: Searches the knowledge base.
+
+    Usage:
+    - Create an instance of this class to represent the RosieRAG knowledge base.
+
+    Author: Adam Haile
+    Date: 10/16/2024
+    """
+
+    chunker: DocumentChunker = DocumentChunker()
+    scraper: WebScraper = WebScraper()
+    embedder: DocumentEmbedder = embedder
+    vs_manager: VectorstoreManager = VectorstoreManager()
+    tokenizer: ChunkTokenizer = ChunkTokenizer()
+    bm25: BM25Model = BM25Model()
+    rrf: ReciprocalRankFusion = ReciprocalRankFusion()
+    reranker: Reranker = Reranker()
+
+    def _validate_project(
+        self, project: str, vs: str, model: str, create_if_not_exists: bool = False
+    ) -> Tuple[str, str, str]:
+        """
+        Validates a project exists.
+
+        Args:
+        - project: str: The project name.
+        - vs: str: The vectorstore name.
+        - model: str: The model name.
+        - create_if_not_exists: bool: Whether to create the project if it does not exist.
+
+        Returns:
+        - Tuple[str, str, str]: The project path, vectorstore path, and model path.
+
+        Raises:
+        - ValueError: If the project does not exist (or already exists if create_if_not_exists = True).
+
+        Usage:
+        - Use this method to validate a project exists before performing operations on it.
+
+        Author: Adam Haile
+        Date: 10/16/2024
+        """
+
+        # Validate the project
+        project_path = os.path.join(os.getcwd(), ".rosierag", project)
         if not os.path.exists(project_path):
-            os.makedirs(project_path)
+            if create_if_not_exists:
+                os.makedirs(project_path)
+            else:
+                raise ValueError("Project not found.")
+        elif create_if_not_exists:
+            raise ValueError("Project already exists.")
 
-        vs_path = f"./.rosierag/{project_name}/{vectorstore_name}"
-        if os.path.exists(vs_path):
-            raise ValueError("Vectorstore already exists.")
+        # Validate the vectorstore
+        vs_path = os.path.join(os.getcwd(), ".rosierag", project, vs)
+        if not os.path.exists(vs_path):
+            if create_if_not_exists:
+                os.makedirs(vs_path)
+            else:
+                raise ValueError("Vectorstore does not exists.")
+        elif create_if_not_exists:
+            raise ValueError("Vectorstore already exists")
 
-        model_path = f"./.rosierag/{project_name}/{model_name}"
-        if os.path.exists(model_path):
-            raise ValueError("Keyword model already exists.")
+        # Validate the keyword model
+        model_path = os.path.join(os.getcwd(), ".rosierag", project, model)
+        if not os.path.exists(model_path):
+            if create_if_not_exists:
+                os.makedirs(model_path)
+            else:
+                raise ValueError("Keyword model does not exists.")
+        elif create_if_not_exists:
+            raise ValueError("Keyword model already exists")
 
-        os.mkdir(model_path)
+        # Return the paths of each validated item
+        return project_path, vs_path, model_path
 
+    def create_kb(
+        self, project_name: str, vectorstore_name: str, model_name: str
+    ) -> None:
+        """
+        Creates a knowledge base.
+
+        Args:
+        - project_name: str: The project name.
+        - vectorstore_name: str: The vectorstore name.
+        - model_name: str: The model name.
+
+        Returns:
+        - None
+
+        Raises:
+        - ValueError: If the project already exists.
+
+        Usage:
+        - kbase.create_kb("project", "vectorstore", "model")
+
+        Author: Adam Haile
+        Date: 10/16/2024
+        """
+        _, vs_path, _ = self._validate_project(
+            project_name, vectorstore_name, model_name, create_if_not_exists=True
+        )
+
+        # Create and save a new vectorstore to the vs_path
+        # (Same process is not necessary for the keyword model, model is saved when data is added)
         vectorstore = self.vs_manager.create_vectorstore()
         self.vs_manager.save_vectorstore(vectorstore, vs_path)
 
     def add_documents(
         self,
-        project_name: str,
-        vectorstore_name: str,
-        model_name: str,
+        args: DocumentArgs,
         documents: List[UploadFile],
-    ):
-        project_path = f"./.rosierag/{project_name}"
-        if not os.path.exists(project_path):
-            raise ValueError("Project not found.")
+        upload: bool = True,
+    ) -> List[str]:
+        """
+        Adds documents to the knowledge base.
 
-        vs_path = f"./.rosierag/{project_name}/{vectorstore_name}"
-        if not os.path.exists(vs_path):
-            raise ValueError("Vectorstore does not exists.")
+        Args:
+        - args: DocumentArgs: The document arguments.
+        - documents: List[UploadFile]: The list of documents to add.
+        - upload: bool: Whether to upload the documents or use pre-added ones.
 
-        model_path = f"./.rosierag/{project_name}/{model_name}"
-        if not os.path.exists(model_path):
-            raise ValueError("Keyword model does not exists.")
+        Returns:
+        - List[str]: The list of document IDs.
+
+        Raises:
+        - ValueError: If a document of the same name already exists.
+
+        Usage:
+        - kbase.add_documents(args, documents)
+
+        Author: Adam Haile
+        Date: 10/16/2024
+        """
+        project_path, vs_path, _ = self._validate_project(
+            args.project_name, args.vectorstore_name, args.model_name
+        )
 
         ids = []
         tokenized_docs = []
+        new_tokenized_docs = []
+
+        # Attempt to load the existing BM25 model and documents
+        try:
+            existing_docs, _ = self.bm25.load_model(args.project_name, args.model_name)
+            tokenized_docs.extend(existing_docs)
+            logger.info("Existing BM25 model and documents loaded.")
+        except FileNotFoundError:
+            # If no existing model, initialize a new list
+            logger.info("No existing BM25 model found. Creating a new one.")
+
         for document in documents:
-            file_path = project_path + f"/{document.filename}"
-            if os.path.exists(file_path):
-                raise ValueError(
-                    f"Document of same name already exists: {document.filename}"
-                )
+            # Save the document to the project directory
+            file_path = os.path.join(project_path, document.filename)
+            if upload:
+                # Check if a document of the same name already exists
+                if os.path.exists(file_path):
+                    raise ValueError(
+                        f"Document of same name already exists: {document.filename}"
+                    )
 
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, "wb") as f:
-                f.write(document.file.read())
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, "wb") as f:
+                    f.write(document.file.read())
 
+            # Load the vectorstore
+            logger.info(f"Processing document: {document.filename}")
             vectorstore = self.vs_manager.load_vectorstore(vs_path)
 
-            document = Document(directory=os.path.abspath(file_path))
-            document_chunks = self.chunker.chunk_document(document)
+            # Convert the document to a Document object
+            document_obj = Document(directory=os.path.abspath(file_path))
+
+            # Chunk, embed, and tokenize the document
+            logger.info("Chunking document.")
+            document_chunks = self.chunker.chunk_document(document_obj, n=args.n)
+
+            logger.info("Embedding document.")
             document_embeddings = self.embedder.embed_chunks(document_chunks)
+
+            logger.info("Tokenizing document.")
             document_tokens = self.tokenizer.tokenize_documents(document_chunks)
-            tokenized_docs.extend(document_tokens)
+            new_tokenized_docs.extend(document_tokens)
 
+            # Add the document embeddings to the vectorstore
             ids.extend(self.vs_manager.add_chunks(vectorstore, document_embeddings))
+            logger.info(f"{document.filename} preprocessed.")
 
+        # Combine existing and new tokenized documents
+        tokenized_docs.extend(new_tokenized_docs)
+
+        # Save the vectorstore and create the new/updated BM25 model
+        logger.info("Saving databases and models.")
         self.vs_manager.save_vectorstore(vectorstore, vs_path)
-
-        self.bm25.create_model(project_name, model_name, tokenized_docs)
+        self.bm25.create_model(args.project_name, args.model_name, tokenized_docs)
 
         return ids
 
-    def add_project(self, project_name: str, vectorstore_name: str):
-        project_path = f"./.rosierag/{project_name}"
-        if not os.path.exists(project_path):
-            raise ValueError("Project not found.")
+    def add_webpages(
+        self,
+        project_name: str,
+        vectorstore_name: str,
+        model_name: str,
+        webpages: List[str],
+    ) -> List[str]:
+        """
+        Add webpages to the knowledge base.
 
-        kb_path = f"{project_path}/{vectorstore_name}"
-        if not os.path.exists(kb_path):
-            raise ValueError("Knowledge base not found.")
+        Args:
+        - project_name: str: The project name.
+        - vectorstore_name: str: The vectorstore name.
+        - model_name: str: The model name.
+
+        Returns:
+        - List[str]: The list of document IDs.
+
+        Raises:
+        - ValueError: If no documents are found in the project.
+
+        Usage:
+        - kbase.add_webpages("project", "vectorstore", "model", ["https://www.somewebsite.com", "https://www.somewebsite2.com"])
+
+        Author: Adam Haile
+        Date: 10/16/2024
+        """
+        # Validate the project
+        self._validate_project(project_name, vectorstore_name, model_name)
+
+        # Scrape the webpages and run add_documents on the returned HTML files
+        logger.info("Downloading webpages to project directory.")
+        page_files = self.scraper.add_pages(project_name, webpages)
+        return self.add_documents(
+            DocumentArgs(
+                project_name=project_name,
+                vectorstore_name=vectorstore_name,
+                model_name=model_name,
+            ),
+            page_files,
+            upload=False,
+        )
+
+    def add_project(
+        self, project_name: str, vectorstore_name: str, model_name: str
+    ) -> None:
+        project_path, vs_path, _ = self._validate_project(
+            project_name, vectorstore_name, model_name
+        )
 
         documents = os.listdir(project_path)
         if not documents:
             raise ValueError("No documents found in project.")
 
-        vectorstore = self.vs_manager.load_vectorstore(kb_path)
+        vectorstore = self.vs_manager.load_vectorstore(vs_path)
 
         document_chunks = []
         for document in documents:
@@ -121,7 +373,7 @@ class KnowledgeBase:
 
         document_embeddings = self.embedder.embed_chunks(document_chunks)
         self.vs_manager.add_chunks(vectorstore, document_embeddings)
-        self.vs_manager.save_vectorstore(vectorstore, kb_path)
+        self.vs_manager.save_vectorstore(vectorstore, vs_path)
 
     def search(
         self,
@@ -130,35 +382,55 @@ class KnowledgeBase:
         model_name: str,
         params: SearchParameters,
     ) -> List[Tuple[Chunk, float]]:
-        project_path = f"./.rosierag/{project_name}"
-        if not os.path.exists(project_path):
-            raise ValueError("Project not found.")
+        """
+        Searches the knowledge base.
 
-        vs_path = f"./.rosierag/{project_name}/{vectorstore_name}"
-        if not os.path.exists(vs_path):
-            raise ValueError("Vectorstore does not exists.")
+        Args:
+        - project_name: str: The project name.
+        - vectorstore_name: str: The vectorstore name.
+        - model_name: str: The model name.
 
-        model_path = f"./.rosierag/{project_name}/{model_name}"
-        if not os.path.exists(model_path):
-            raise ValueError("Keyword model does not exists.")
+        Returns:
+        - List[Tuple[Chunk, float]]: The search results and the score of the Chunk.
 
+        Raises:
+        - ValueError: If the project does not exist.
+
+        Usage:
+        - kbase.search("project", "vectorstore", "model", SearchParameters(query="query", n_results=10, filter={}, rerank=True))
+
+        Author: Adam Haile
+        Date: 10/16/2024
+        """
+
+        # Validate the project
+        _, vs_path, _ = self._validate_project(
+            project_name, vectorstore_name, model_name
+        )
+
+        # Load the vectorstore, token chunks, and BM25 model
         vectorstore = self.vs_manager.load_vectorstore(vs_path)
         token_chunks, bm25_model = self.bm25.load_model(project_name, model_name)
 
+        # Embed and tokenize the query
         query_embeddings = self.embedder.embed_query(params.query)
         query_tokens = self.tokenizer.tokenize_query(params.query)
 
+        # Establish the search parameters for the vectorstore
         vs_params = VectorstoreSearchParameters(
             embedded_query=query_embeddings, k=params.n_results, filter=params.filter
         )
 
+        # Search the vectorstore and BM25 model
         faiss_chunks = self.vs_manager.search(vectorstore, vs_params)
         keyword_chunks = self.bm25.search(
             query_tokens, bm25_model, token_chunks, k=params.n_results
         )
 
+        # Rank the results using reciprocal rank fusion
         chunks = self.rrf.ranks([faiss_chunks, keyword_chunks], n=params.n_results)
 
+        # Rerank the results if necessary
         if params.rerank:
             chunks = self.reranker.cross_encode_rerank(
                 params.query, [chunk for chunk, score in chunks]

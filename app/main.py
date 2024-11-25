@@ -8,7 +8,7 @@ from fastapi.responses import Response, RedirectResponse
 from api.api import api_router
 from core.logger import logger
 from core.settings import get_settings
-from core.requestor import query, add_documents, new_knowledge_base
+from core.requestor import query, add_documents, new_knowledge_base, add_webpages
 from core.middleware.token_validator import TokenValidationMiddleware
 
 os.makedirs("./.rosierag", exist_ok=True)
@@ -29,6 +29,7 @@ css = """
 .left-bar {width: 12.5% !important; min-width: 0 !important; flex-grow: 1.1 !important;}
 .right-bar {width: 85% !important; flex-grow: 3.5 !important;}
 .send-button {position: absolute; z-index: 99; right: 10px; height: 100%; background: none; min-width: 0 !important;}
+footer {display: none !important;}
 """
 
 
@@ -75,17 +76,6 @@ def update_project(project):
     )
 
 
-def upload_documents(files, project, vs, model):
-    try:
-        gr.Info(
-            f"Starting upload of {len(files)} file(s) to '{project}'/'{vs}+{model}'..."
-        )
-        add_documents(project=project, vs=vs, model=model, documents=files)
-        gr.Info(f"{len(files)} file(s) uploaded successfully.")
-    except Exception as e:
-        gr.Error(f"Upload failed: {str(e)}")
-
-
 def rag_query(user_query, project, vs, model):
     responses = query(project=project, vs=vs, model=model, query=user_query)
     text_response = ""
@@ -99,7 +89,7 @@ def rag_query(user_query, project, vs, model):
                     {"role": "user", "content": user_query},
                     {"role": "assistant", "content": text_response},
                 ]
-            ), gr.update(value=None)
+            ), gr.update(value=None), None
             break
         else:
             text_response += token
@@ -108,7 +98,7 @@ def rag_query(user_query, project, vs, model):
                     {"role": "user", "content": user_query},
                     {"role": "assistant", "content": text_response},
                 ]
-            ), gr.update(value=None)
+            ), gr.update(value=None), None
 
     json_value = ""
     for token in responses:
@@ -121,7 +111,7 @@ def rag_query(user_query, project, vs, model):
             {"role": "user", "content": user_query},
             {"role": "assistant", "content": text_response},
         ]
-    ), gr.update(value=json_value)
+    ), gr.update(value=json_value), None
 
 
 def create_knowledge_base(project, vs, model):
@@ -164,6 +154,56 @@ def create_knowledge_base(project, vs, model):
         gr.Error(f"Error: {res['response']}")
 
     return None, None, None, None, None, None
+
+
+def refresh_all():
+    projects = os.listdir("./.rosierag")
+    vs = (
+        [
+            i
+            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
+            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            and any(
+                fname.endswith(".faiss")
+                for fname in os.listdir(
+                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                )
+            )
+        ]
+        if len(os.listdir("./.rosierag")) > 0
+        else []
+    )
+    models = (
+        [
+            i
+            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
+            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            and not any(
+                fname.endswith(".faiss")
+                for fname in os.listdir(
+                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                )
+            )
+        ]
+        if len(os.listdir("./.rosierag")) > 0
+        else []
+    )
+    project_update = gr.update(choices=projects)
+    vs_update = gr.update(choices=vs)
+    model_update = gr.update(choices=models)
+
+    selected_project = gr.update(value=projects[0] if projects else None)
+    selected_vs = gr.update(value=vs[0] if vs else None)
+    selected_model = gr.update(value=models[0] if models else None)
+
+    return (
+        project_update,
+        vs_update,
+        model_update,
+        selected_project,
+        selected_vs,
+        selected_model,
+    )
 
 
 with gr.Blocks() as projects:
@@ -259,6 +299,20 @@ with gr.Blocks() as projects:
                     label="Keyword Models",
                 )
 
+                refresh = gr.Button("Refresh")
+                refresh.click(
+                    fn=refresh_all,
+                    inputs=[],
+                    outputs=[
+                        project_dropdown,
+                        vs_dropdown,
+                        keyword_model_dropdown,
+                        selected_project,
+                        selected_vs,
+                        selected_model,
+                    ],
+                )
+
         with gr.Column():
             with gr.Row():
                 new_project = gr.Textbox(label="New Project")
@@ -308,21 +362,22 @@ with gr.Blocks() as home:
                 file_types=[".txt", ".pdf", "text"],
                 file_count="multiple",
             )
-            gr.Textbox(label="Get a webpage")
+            pages = gr.Textbox(
+                label="Get a webpage", placeholder="Enter URL(s) separated by commas"
+            )
+            upload_pages = gr.Button("Submit URLs")
 
         with gr.Column(elem_classes="right-bar"):
             with gr.Row():
                 with gr.Column(scale=4):
                     gr.Markdown("## RAG Chat Interface")
-                    chatbot = gr.Chatbot(height=350, type="messages")
+                    chatbot = gr.Chatbot(height=425, type="messages")
                     with gr.Row():
                         textbox = gr.Textbox(
-                            show_label=False, placeholder="Message RosieRAG...", scale=6
-                        )
-                        button = gr.Button(
-                            "",
-                            elem_classes="send-button",
-                            icon="https://uxwing.com/wp-content/themes/uxwing/download/communication-chat-call/send-white-icon.png",
+                            show_label=False,
+                            placeholder="Message RosieRAG...",
+                            scale=6,
+                            submit_btn=True,
                         )
 
                 with gr.Column(scale=2):
@@ -332,24 +387,25 @@ with gr.Blocks() as home:
             textbox.submit(
                 fn=rag_query,
                 inputs=[textbox, selected_project, selected_vs, selected_model],
-                outputs=[chatbot, chunks],
-            )
-
-            button.click(
-                fn=rag_query,
-                inputs=[textbox, selected_project, selected_vs, selected_model],
-                outputs=[chatbot, chunks],
+                outputs=[chatbot, chunks, textbox],
             )
 
         file.change(
-            fn=upload_documents,
-            inputs=[file, selected_project, selected_vs, selected_model],
-            outputs=chatbot,
+            fn=add_documents,
+            inputs=[selected_project, selected_vs, selected_model, file],
+            outputs=[chatbot, textbox],
         )
 
-with gr.Blocks(css=css) as io:
+        upload_pages.click(
+            fn=add_webpages,
+            inputs=[selected_project, selected_vs, selected_model, pages],
+            outputs=[chatbot, textbox],
+        )
+
+with gr.Blocks(title="RosieRAG", css=css) as io:
     gr.TabbedInterface([home, projects], ["Home", "Projects"])
 
+io.queue()
 
 app = gr.mount_gradio_app(
     app,

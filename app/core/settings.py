@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "Rosie"
     DEVICE: str = "cuda"
     BASE_URL: str = ""
-    MODE: str = ""
     MODEL_PATH: str = "/home/hailea/Llama-3.2-3B-Instruct.gguf"
     ROSIE_LLM: str = "http://dh-dgxh100-2.hpc.msoe.edu:8000/v1"
 

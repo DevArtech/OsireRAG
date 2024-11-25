@@ -1,17 +1,17 @@
-from typing import List, Tuple
+from pydantic import BaseModel
+from typing import List, Tuple, Any
 from sentence_transformers import CrossEncoder
 
 from core.models.chunker import Chunk
 from core.settings import get_settings
 
 
-class Reranker:
-    def __init__(self):
-        self.cross_encoder = CrossEncoder(
-            "cross-encoder/ms-marco-TinyBERT-L-2-v2",
-            max_length=512,
-            device=get_settings().DEVICE,
-        )
+class Reranker(BaseModel):
+    cross_encoder: Any = CrossEncoder(
+        "cross-encoder/ms-marco-TinyBERT-L-2-v2",
+        max_length=512,
+        device=get_settings().DEVICE,
+    )
 
     def cross_encode_rerank(
         self, query: str, documents: List[Chunk]

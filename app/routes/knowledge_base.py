@@ -4,7 +4,7 @@ from fastapi import APIRouter, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from core.models.chunker import Chunk
-from core.models.knowledge_base import KnowledgeBase, SearchParameters
+from core.models.knowledge_base import KnowledgeBase, SearchParameters, DocumentArgs
 
 kb = KnowledgeBase()
 router = APIRouter(prefix="/knowledge-base", tags=["knowledge_base"])
@@ -54,7 +54,41 @@ async def add_documents(
             status_code=200,
             content={
                 "response": kb.add_documents(
-                    project_name, vectorstore_name, model_name, documents
+                    DocumentArgs(
+                        project_name=project_name,
+                        vectorstore_name=vectorstore_name,
+                        model_name=model_name,
+                    ),
+                    documents,
+                )
+            },
+        )
+    except ValueError as e:
+        return JSONResponse(status_code=404, content={"detail": str(e)})
+
+
+@router.post(
+    "/add-webpages/",
+    responses={
+        200: {"description": "Webpages added successfully."},
+        404: {"description": "Project or vectorstore not found."},
+    },
+)
+async def add_webpages(
+    project_name: str,
+    vectorstore_name: str,
+    model_name: str,
+    urls: List[str],
+) -> JSONResponse:
+    """
+    Add a webpage to the knowledge base.
+    """
+    try:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "response": kb.add_webpages(
+                    project_name, vectorstore_name, model_name, urls
                 )
             },
         )

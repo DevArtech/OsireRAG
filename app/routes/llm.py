@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 
 from core.logger import logger
-from core.models.llm import LLM
+from core.models.llm import llm
 from core.settings import get_settings
 from core.models.knowledge_base import KnowledgeBase, SearchParameters
 
@@ -28,7 +28,6 @@ class RAGPrompt(BaseModel):
 
 
 router = APIRouter(prefix="/llm", tags=["llm"])
-llm = LLM()
 kb = KnowledgeBase()
 
 

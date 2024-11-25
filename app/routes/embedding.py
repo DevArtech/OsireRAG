@@ -5,9 +5,8 @@ from typing import List
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from core.models.chunker import Chunk
-from core.models.embedding import DocumentEmbedder, EmbeddedChunk
+from core.models.embedding import embedder, EmbeddedChunk
 
-embedder = DocumentEmbedder()
 router = APIRouter(prefix="/embedding", tags=["embedding"])
 
 

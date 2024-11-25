@@ -2,9 +2,10 @@ import os
 import nltk
 import pickle
 import numpy as np
-from typing import List, Tuple
+from pydantic import BaseModel
 from rank_bm25 import BM25Okapi
 from nltk.corpus import stopwords
+from typing import List, Tuple, Any
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
@@ -15,11 +16,13 @@ class TokenizedChunk(Chunk):
     tokens: List[str]
 
 
-class ChunkTokenizer:
+class ChunkTokenizer(BaseModel):
+    stop_words: set = set(stopwords.words("english"))
+    lemmatizer: Any = WordNetLemmatizer()
+
     def __init__(self):
+        super().__init__()
         nltk.data.path.append(os.path.abspath("./nltk_data"))
-        self.stop_words = set(stopwords.words("english"))
-        self.lemmatizer = WordNetLemmatizer()
 
     def tokenize_query(self, query: str) -> List[str]:
         tokens = word_tokenize(query.lower())
@@ -44,7 +47,7 @@ class ChunkTokenizer:
         return tokenized_docs
 
 
-class BM25Model:
+class BM25Model(BaseModel):
     def create_model(
         self, project_name: str, model_name: str, chunks: List[TokenizedChunk], **kwargs
     ):

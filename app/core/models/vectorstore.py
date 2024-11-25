@@ -1,13 +1,14 @@
 import os
 import uuid
 import faiss
-import numpy as np
 import pickle
+import numpy as np
 from pydantic import BaseModel
+from langchain_huggingface import HuggingFaceEmbeddings
 from typing import List, Dict, Optional, Tuple, Any, Union
 
 from core.models.chunker import Chunk
-from core.models.embedding import EmbeddedChunk, DocumentEmbedder
+from core.models.embedding import EmbeddedChunk, embedder
 
 
 class VectorstoreSearchParameters(BaseModel):
@@ -17,17 +18,19 @@ class VectorstoreSearchParameters(BaseModel):
 
 
 class FAISS(BaseModel):
-    embedding_function: Any  # HuggingFaceEmbeddings
-    index: Any  # faiss.IndexFlatL2
+    embedding_function: HuggingFaceEmbeddings
+    index: faiss.IndexFlatL2
     docstore: Dict[Any, Any]
     index_to_docstore_id: Dict[int, Any]
 
+    class Config:
+        arbitrary_types_allowed = True
 
-class VectorstoreManager:
-    def __init__(self):
-        self.embedding_function = DocumentEmbedder().hf
-        self.index = faiss.IndexFlatL2(384)
-        self.docstore = {}
+
+class VectorstoreManager(BaseModel):
+    embedding_function: Any = embedder.hf
+    index: Any = faiss.IndexFlatL2(384)
+    docstore: Dict[Any, Any] = {}
 
     def create_vectorstore(self) -> FAISS:
         return FAISS(
@@ -46,6 +49,7 @@ class VectorstoreManager:
         ids = [str(uuid.uuid4()) for _ in range(len(chunks))]
         embeddings = np.array([chunk.embedding for chunk in chunks], dtype=np.float32)
 
+        start_idx = vectorstore.index.ntotal
         vectorstore.index.add(embeddings)
         for i, chunk in enumerate(chunks):
             doc_id = ids[i]
@@ -55,7 +59,7 @@ class VectorstoreManager:
                 **chunk.metadata,
                 "embedding": chunk.embedding,
             }
-            vectorstore.index_to_docstore_id[i] = doc_id
+            vectorstore.index_to_docstore_id[start_idx + i] = doc_id
 
         return ids
 
