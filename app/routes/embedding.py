@@ -1,4 +1,23 @@
-import os
+"""
+Module: embedding.py (Router)
+
+This module contains the FastAPI router for the embedding endpoints. The embedding router
+is responsible for handling requests related to embedding queries and chunks.
+
+Classes:
+- None
+
+Functions:
+- embed_query: Embed a query in the RosieRAG API.
+- embed_chunks: Embed a set of chunks in the RosieRAG API.
+
+Attributes:
+- router: The FastAPI router object
+
+Author: Adam Haile
+Date: 10/9/2024
+"""
+
 import json
 from fastapi import APIRouter
 from typing import List
@@ -22,6 +41,18 @@ router = APIRouter(prefix="/embedding", tags=["embedding"])
 async def embed_query(query: str) -> JSONResponse:
     """
     Embed a query in the RosieRAG API.
+
+    Args:
+    - query (str): The query to embed.
+
+    Returns:
+    - JSONResponse: The response containing the embedded query.
+
+    Usage:
+    - POST /embedding/query/
+
+    Author: Adam Haile
+    Date: 10/9/2024
     """
     return JSONResponse(
         status_code=200, content={"response": embedder.embed_query(query)}
@@ -37,8 +68,21 @@ async def embed_query(query: str) -> JSONResponse:
 async def embed_chunks(chunks: List[Chunk]) -> StreamingResponse:
     """
     Embed a set of chunks in the RosieRAG API.
+
+    Args:
+    - chunks (List[Chunk]): The chunks to embed.
+
+    Returns:
+    - StreamingResponse: A streaming response containing the embedded chunks.
+
+    Usage:
+    - POST /embedding/chunks/
+
+    Author: Adam Haile
+    Date: 10/9/2024
     """
 
+    # Define an asynchronous JSON encoder to stream the response in JSON format
     async def async_json_encoder(chunks: List[EmbeddedChunk]):
         yield b'{"response": ['
         for i, chunk in enumerate(chunks):

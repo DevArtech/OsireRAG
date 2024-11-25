@@ -1,412 +1,62 @@
+"""
+Module: main.py
+
+The main module of the application. This module is responsible for creating the FastAPI 
+application and mounting the Gradio interface to it.
+
+Classes:
+- None
+
+Functions:
+- health_check: A simple health check endpoint to verify the application is running.
+
+Attributes:
+- app: The FastAPI application object.
+- rosie_path: The URL of the RosieRAG application.
+
+Author: Adam Haile
+Date: 9/24/2024
+"""
+
 import os
-import json
 import gradio as gr
 from fastapi import FastAPI, status
-from fastapi.responses import Response, RedirectResponse
-
+from fastapi.responses import Response
 
 from api.api import api_router
 from core.logger import logger
+from core.interface.gradio import io
 from core.settings import get_settings
-from core.requestor import query, add_documents, new_knowledge_base, add_webpages
 from core.middleware.token_validator import TokenValidationMiddleware
 
+# Validate the rosierag directory exists
 os.makedirs("./.rosierag", exist_ok=True)
 
+# Set the rosie path based on the environment
 if get_settings().ENVIRONMENT == "local":
     rosie_path = "http://localhost:8080"
 else:
     rosie_path = "https://dh-ood.hpc.msoe.edu" + get_settings().BASE_URL + "/"
 
+# Create the FastAPI application
 app = FastAPI(
     title="RosieRAG", root_path=get_settings().BASE_URL, redirect_slashes=True
 )
+
+# Add the token validation middleware
 app.add_middleware(TokenValidationMiddleware)
 
+# Add the API router which contains all the endpoints
 app.include_router(api_router)
 
-css = """
-.left-bar {width: 12.5% !important; min-width: 0 !important; flex-grow: 1.1 !important;}
-.right-bar {width: 85% !important; flex-grow: 3.5 !important;}
-.send-button {position: absolute; z-index: 99; right: 10px; height: 100%; background: none; min-width: 0 !important;}
-footer {display: none !important;}
-"""
 
-
+# Add the health check endpoint
 @api_router.get("/ping/", tags=["admin"])
 async def health_check():
     return Response(status_code=status.HTTP_200_OK)
 
 
-def update_project(project):
-    vs_list = [
-        i
-        for i in os.listdir(f"./.rosierag/{project}")
-        if os.path.isdir(f"./.rosierag/{project}/{i}")
-        and any(
-            fname.endswith(".faiss")
-            for fname in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-        )
-    ]
-
-    model_list = [
-        i
-        for i in os.listdir(f"./.rosierag/{project}")
-        if os.path.isdir(f"./.rosierag/{project}/{i}")
-        and not any(
-            fname.endswith(".faiss")
-            for fname in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-        )
-    ]
-
-    selected_vs = None
-    if vs_list:
-        selected_vs = vs_list[0]
-
-    selected_model = None
-    if model_list:
-        selected_model = model_list[0]
-
-    return (
-        project,
-        gr.update(choices=vs_list),
-        gr.update(choices=model_list),
-        selected_vs,
-        selected_model,
-    )
-
-
-def rag_query(user_query, project, vs, model):
-    responses = query(project=project, vs=vs, model=model, query=user_query)
-    text_response = ""
-
-    for token in responses:
-        if "<|C|>" in text_response + token:
-            res = (text_response + token).replace("<|C|>", "")
-            text_response = res
-            yield gr.update(
-                value=[
-                    {"role": "user", "content": user_query},
-                    {"role": "assistant", "content": text_response},
-                ]
-            ), gr.update(value=None), None
-            break
-        else:
-            text_response += token
-            yield gr.update(
-                value=[
-                    {"role": "user", "content": user_query},
-                    {"role": "assistant", "content": text_response},
-                ]
-            ), gr.update(value=None), None
-
-    json_value = ""
-    for token in responses:
-        json_value += token
-
-    json_value = json.loads("[" + json_value.replace("}}{", "}},{") + "]")
-
-    yield gr.update(
-        value=[
-            {"role": "user", "content": user_query},
-            {"role": "assistant", "content": text_response},
-        ]
-    ), gr.update(value=json_value), None
-
-
-def create_knowledge_base(project, vs, model):
-    res = new_knowledge_base(project=project, vs=vs, model=model)
-    if res["response"] == "Knowledge base created successfully":
-        gr.Info(f"Knowledge base '{project}/{vs}+{model}' created successfully.")
-
-        project_update = gr.update(choices=os.listdir("./.rosierag"), value=project)
-        vs_update = gr.update(
-            choices=[
-                i
-                for i in os.listdir(f"./.rosierag/{project}")
-                if os.path.isdir(f"./.rosierag/{project}/{i}")
-                and any(
-                    fname.endswith(".faiss")
-                    for fname in os.listdir(
-                        f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                    )
-                )
-            ],
-            value=vs,
-        )
-        model_update = gr.update(
-            choices=[
-                i
-                for i in os.listdir(f"./.rosierag/{project}")
-                if os.path.isdir(f"./.rosierag/{project}/{i}")
-                and not any(
-                    fname.endswith(".faiss")
-                    for fname in os.listdir(
-                        f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                    )
-                )
-            ],
-            value=model,
-        )
-
-        return project_update, vs_update, model_update, project, vs, model
-    else:
-        gr.Error(f"Error: {res['response']}")
-
-    return None, None, None, None, None, None
-
-
-def refresh_all():
-    projects = os.listdir("./.rosierag")
-    vs = (
-        [
-            i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-            and any(
-                fname.endswith(".faiss")
-                for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                )
-            )
-        ]
-        if len(os.listdir("./.rosierag")) > 0
-        else []
-    )
-    models = (
-        [
-            i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-            and not any(
-                fname.endswith(".faiss")
-                for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                )
-            )
-        ]
-        if len(os.listdir("./.rosierag")) > 0
-        else []
-    )
-    project_update = gr.update(choices=projects)
-    vs_update = gr.update(choices=vs)
-    model_update = gr.update(choices=models)
-
-    selected_project = gr.update(value=projects[0] if projects else None)
-    selected_vs = gr.update(value=vs[0] if vs else None)
-    selected_model = gr.update(value=models[0] if models else None)
-
-    return (
-        project_update,
-        vs_update,
-        model_update,
-        selected_project,
-        selected_vs,
-        selected_model,
-    )
-
-
-with gr.Blocks() as projects:
-    new_project = gr.State()
-    new_vs = gr.State()
-    new_model = gr.State()
-    selected_project = gr.State(
-        value=(
-            os.listdir("./.rosierag")[0] if len(os.listdir("./.rosierag")) > 0 else None
-        )
-    )
-    vss = (
-        [
-            i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-            and any(
-                fname.endswith(".faiss")
-                for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                )
-            )
-        ]
-        if len(os.listdir("./.rosierag")) > 0
-        else []
-    )
-    selected_vs = gr.State(value=vss[0] if vss else None)
-    models = (
-        [
-            i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
-            and not any(
-                fname.endswith(".faiss")
-                for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                )
-            )
-        ]
-        if len(os.listdir("./.rosierag")) > 0
-        else []
-    )
-    selected_model = gr.State(value=models[0] if models else None)
-
-    with gr.Row():
-        with gr.Column():
-            with gr.Row():
-                project_dropdown = gr.Dropdown(
-                    choices=os.listdir("./.rosierag"), label="Projects"
-                )
-                vs_dropdown = gr.Dropdown(
-                    choices=(
-                        [
-                            i
-                            for i in os.listdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}"
-                            )
-                            if os.path.isdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                            )
-                            and any(
-                                fname.endswith(".faiss")
-                                for fname in os.listdir(
-                                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                                )
-                            )
-                        ]
-                        if len(os.listdir("./.rosierag")) > 0
-                        else []
-                    ),
-                    label="Vectorstores",
-                )
-                keyword_model_dropdown = gr.Dropdown(
-                    choices=(
-                        [
-                            i
-                            for i in os.listdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}"
-                            )
-                            if os.path.isdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                            )
-                            and not any(
-                                fname.endswith(".faiss")
-                                for fname in os.listdir(
-                                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
-                                )
-                            )
-                        ]
-                        if len(os.listdir("./.rosierag")) > 0
-                        else []
-                    ),
-                    label="Keyword Models",
-                )
-
-                refresh = gr.Button("Refresh")
-                refresh.click(
-                    fn=refresh_all,
-                    inputs=[],
-                    outputs=[
-                        project_dropdown,
-                        vs_dropdown,
-                        keyword_model_dropdown,
-                        selected_project,
-                        selected_vs,
-                        selected_model,
-                    ],
-                )
-
-        with gr.Column():
-            with gr.Row():
-                new_project = gr.Textbox(label="New Project")
-                new_vs = gr.Textbox(label="New Vectorstore")
-                new_model = gr.Textbox(label="New Keyword Model")
-            with gr.Row():
-                btn = gr.Button("Create Knowledge Base")
-                btn.click(
-                    create_knowledge_base,
-                    inputs=[new_project, new_vs, new_model],
-                    outputs=[
-                        project_dropdown,
-                        vs_dropdown,
-                        keyword_model_dropdown,
-                        selected_project,
-                        selected_vs,
-                        selected_model,
-                    ],
-                )
-
-    project_dropdown.change(
-        fn=update_project,
-        inputs=project_dropdown,
-        outputs=[
-            selected_project,
-            vs_dropdown,
-            keyword_model_dropdown,
-            selected_vs,
-            selected_model,
-        ],
-    )
-    vs_dropdown.change(lambda vs: vs, inputs=vs_dropdown, outputs=selected_vs)
-
-    keyword_model_dropdown.change(
-        fn=lambda kw_model: kw_model,
-        inputs=keyword_model_dropdown,
-        outputs=selected_vs,
-    )
-
-
-with gr.Blocks() as home:
-    with gr.Row():
-        with gr.Column(elem_classes="left-bar"):
-            gr.Markdown("## Documents")
-            file = gr.File(
-                label="Upload documents",
-                file_types=[".txt", ".pdf", "text"],
-                file_count="multiple",
-            )
-            pages = gr.Textbox(
-                label="Get a webpage", placeholder="Enter URL(s) separated by commas"
-            )
-            upload_pages = gr.Button("Submit URLs")
-
-        with gr.Column(elem_classes="right-bar"):
-            with gr.Row():
-                with gr.Column(scale=4):
-                    gr.Markdown("## RAG Chat Interface")
-                    chatbot = gr.Chatbot(height=425, type="messages")
-                    with gr.Row():
-                        textbox = gr.Textbox(
-                            show_label=False,
-                            placeholder="Message RosieRAG...",
-                            scale=6,
-                            submit_btn=True,
-                        )
-
-                with gr.Column(scale=2):
-                    gr.Markdown("## Retrieved Chunks")
-                    chunks = gr.JSON(label="Chunks", value=None)
-
-            textbox.submit(
-                fn=rag_query,
-                inputs=[textbox, selected_project, selected_vs, selected_model],
-                outputs=[chatbot, chunks, textbox],
-            )
-
-        file.change(
-            fn=add_documents,
-            inputs=[selected_project, selected_vs, selected_model, file],
-            outputs=[chatbot, textbox],
-        )
-
-        upload_pages.click(
-            fn=add_webpages,
-            inputs=[selected_project, selected_vs, selected_model, pages],
-            outputs=[chatbot, textbox],
-        )
-
-with gr.Blocks(title="RosieRAG", css=css) as io:
-    gr.TabbedInterface([home, projects], ["Home", "Projects"])
-
-io.queue()
-
+# Mount the Gradio interface to the FastAPI application
 app = gr.mount_gradio_app(
     app,
     io,
@@ -416,6 +66,7 @@ app = gr.mount_gradio_app(
 )
 
 
+# Log the URL the application is running at
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"RosieRAG is running at: {rosie_path}")

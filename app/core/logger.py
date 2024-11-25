@@ -1,4 +1,21 @@
-import os
+"""
+Module: logger.py
+
+Contains the logger configuration for the FastAPI app.
+
+Classes:
+- COLORS: Pydantic model for color codes for different log levels.
+
+Functions:
+- None
+
+Usage:
+- Import the logger object from this module into the main FastAPI app, along with COLORS if you wish to use color.
+
+Author: Adam Haile
+Date: 10/10/2024
+"""
+
 import logging
 from pydantic import BaseModel
 

@@ -1,3 +1,25 @@
+"""
+Module: vectorstore.py (Router)
+
+This module contains the FastAPI router for the vectorstore module. The vectorstore module is a module
+that allows users to create, add, get, and search vectorstores.
+
+Classes:
+- None
+
+Functions:
+- create_vectorstore: Creates a new vectorstore.
+- add_chunks: Adds chunks to a vectorstore.
+- get_chunks: Gets chunks from a vectorstore.
+- search: Searches for chunks in a vectorstore.
+
+Attributes:
+- router: The FastAPI router object.
+- vs_manager: The VectorstoreManager object.
+
+Author: Adam Haile
+Date: 10/13/2024
+"""
 import os
 import json
 from typing import List, Tuple
@@ -22,15 +44,35 @@ vs_manager: VectorstoreManager = VectorstoreManager()
     },
 )
 async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONResponse:
-    project_path = f"./.rosierag/{project_name}"
+    """
+    Create a new vectorstore.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - POST /vectorstore/{project_name}/create/{vectorstore_name}/
+
+    Author: Adam Haile
+    Date: 10/13/2024
+    """
+
+    # Validate the project exists
+    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
-    if os.path.exists(os.path.abspath(project_path + "/" + vectorstore_name)):
+    # Validate the vectorstore does not already exist
+    if os.path.exists(os.path.join(project_path, vectorstore_name)):
         return JSONResponse(
             status_code=409, content={"detail": "Vectorstore already exists."}
         )
 
+    # Create the vectorstore
     user_vectorstore = vs_manager.create_vectorstore()
     vs_manager.save_vectorstore(
         user_vectorstore, os.path.abspath(project_path + "/" + vectorstore_name)
@@ -50,16 +92,36 @@ async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONRe
 async def add_chunks(
     project_name: str, vectorstore_name: str, chunks: List[EmbeddedChunk]
 ) -> JSONResponse:
-    project_path = f"./.rosierag/{project_name}"
+    """
+    Add chunks to a vectorstore.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - chunks (List[EmbeddedChunk]): The list of chunks to add.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - POST /vectorstore/{project_name}/add/{vectorstore_name}/
+
+    Author: Adam Haile
+    Date: 10/13/2024
+    """
+    # Validate the project exists
+    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
-    vectorstore_path = os.path.abspath(project_path + "/" + vectorstore_name)
+    # Validate the vectorstore exists
+    vectorstore_path = os.path.join(project_path, vectorstore_name)
     if not os.path.exists(vectorstore_path):
         return JSONResponse(
             status_code=404, content={"detail": "Vectorstore not found."}
         )
 
+    # Add the chunks to the vectorstore
     user_vectorstore = vs_manager.load_vectorstore(vectorstore_path)
     ids = vs_manager.add_chunks(user_vectorstore, chunks)
     vs_manager.save_vectorstore(user_vectorstore, vectorstore_path)
@@ -77,19 +139,40 @@ async def add_chunks(
 async def get_chunks(
     project_name: str, vectorstore_name: str, ids: List[str]
 ) -> StreamingResponse:
-    project_path = f"./.rosierag/{project_name}"
+    """
+    Get chunks from a vectorstore.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - ids (List[str]): The list of IDs of the chunks to get.
+
+    Returns:
+    - StreamingResponse: The response message.
+
+    Usage:
+    - POST /vectorstore/{project_name}/get/{vectorstore_name}/
+
+    Author: Adam Haile
+    Date: 10/13/2024
+    """
+    # Validate the project exists
+    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
-    vectorstore_path = os.path.abspath(project_path + "/" + vectorstore_name)
+    # Validate the vectorstore exists
+    vectorstore_path = os.path.join(project_path, vectorstore_name)
     if not os.path.exists(vectorstore_path):
         return JSONResponse(
             status_code=404, content={"detail": "Vectorstore not found."}
         )
 
+    # Get the chunks from the vectorstore
     user_vectorstore = vs_manager.load_vectorstore(vectorstore_path)
     chunks = vs_manager.get_chunks(user_vectorstore, ids)
 
+    # Stream the chunks as JSON encoded
     async def async_json_encoder(chunks: List[Chunk]):
         yield b'{"response": ['
         for i, chunk in enumerate(chunks):
@@ -133,21 +216,42 @@ async def search(
     vectorstore_name: str,
     search_parameters: VectorstoreSearchParameters,
 ) -> StreamingResponse:
-    project_path = f"./.rosierag/{project_name}"
+    """
+    Search for chunks in a vectorstore.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - search_parameters (VectorstoreSearchParameters): The search parameters.
+
+    Returns:
+    - StreamingResponse: The response message.
+
+    Usage:
+    - POST /vectorstore/{project_name}/search/{vectorstore_name}/
+
+    Author: Adam Haile
+    Date: 10/13/2024
+    """
+    # Validate the project exists
+    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
-    vectorstore_path = os.path.abspath(project_path + "/" + vectorstore_name)
+    # Validate the vectorstore exists
+    vectorstore_path = os.path.join(project_path, vectorstore_name)
     if not os.path.exists(vectorstore_path):
         return JSONResponse(
             status_code=404, content={"detail": "Vectorstore not found."}
         )
 
+    # Search the vectorstore
     user_vectorstore = vs_manager.load_vectorstore(vectorstore_path)
     chunks = vs_manager.search(
         vectorstore=user_vectorstore, search_params=search_parameters
     )
 
+    # Stream the chunks as JSON encoded
     async def async_json_encoder(chunks: List[Tuple[Chunk, float]]):
         yield b'{"response": ['
         for i, chunk in enumerate(chunks):

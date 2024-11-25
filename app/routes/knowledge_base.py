@@ -1,3 +1,27 @@
+"""
+Module: knowledge_base.py (Router)
+
+This module contains the FastAPI router for the knowledge base. The knowledge base is a module that
+allows users to create a knowledge base, add documents to it, and search it for relevant information.
+
+Classes:
+- None
+
+Functions:
+- create_kb: Create a new knowledge base.
+- add_documents: Add a document to the knowledge base.
+- add_webpages: Add a webpage to the knowledge base.
+- add_project: Add a project to the knowledge base.
+- search: Search the knowledge base.
+
+Attributes:
+- kb: The KnowledgeBase object.
+- router: The FastAPI router object.
+
+Author: Adam Haile
+Date: 10/16/2024
+"""
+
 import json
 from typing import List, Tuple
 from fastapi import APIRouter, UploadFile
@@ -23,6 +47,20 @@ async def create_kb(
 ) -> JSONResponse:
     """
     Create a new knowledge base.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - GET /knowledge-base/create-kb/?project_name=example_project&vectorstore_name=example_vectorstore&model_name=example_model
+
+    Author: Adam Haile
+    Date: 10/16/2024
     """
     try:
         kb.create_kb(project_name, vectorstore_name, model_name)
@@ -48,6 +86,21 @@ async def add_documents(
 ) -> JSONResponse:
     """
     Add a document to the knowledge base.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+    - documents (List[UploadFile]): The list of documents to add.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - POST /knowledge-base/add-documents/
+
+    Author: Adam Haile
+    Date: 10/16/2024
     """
     try:
         return JSONResponse(
@@ -64,6 +117,7 @@ async def add_documents(
             },
         )
     except ValueError as e:
+        # Return a 404 response if the project, vectorstore, or model is not found
         return JSONResponse(status_code=404, content={"detail": str(e)})
 
 
@@ -82,6 +136,20 @@ async def add_webpages(
 ) -> JSONResponse:
     """
     Add a webpage to the knowledge base.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - POST /knowledge-base/add-webpages/
+
+    Author: Adam Haile
+    Date: 10/16/2024
     """
     try:
         return JSONResponse(
@@ -93,6 +161,7 @@ async def add_webpages(
             },
         )
     except ValueError as e:
+        # Return a 404 response if the project, vectorstore, or model is not found
         return JSONResponse(status_code=404, content={"detail": str(e)})
 
 
@@ -108,6 +177,20 @@ async def add_project(
 ) -> JSONResponse:
     """
     Add a project to the knowledge base.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+
+    Returns:
+    - JSONResponse: The response message.
+
+    Usage:
+    - POST /knowledge-base/add-project/
+
+    Author: Adam Haile
+    Date: 10/16/2024
     """
     try:
         kb.add_project(project_name, vectorstore_name)
@@ -115,6 +198,7 @@ async def add_project(
             status_code=200, content={"response": "Project added successfully"}
         )
     except ValueError as e:
+        # Return a 404 response if the project or vectorstore is not found
         return JSONResponse(status_code=404, content={"detail": str(e)})
 
 
@@ -133,12 +217,27 @@ async def search(
 ) -> StreamingResponse:
     """
     Search the knowledge base.
+
+    Args:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+
+    Returns:
+    - StreamingResponse: The top chunks found for the given query.
+
+    Usage:
+    - POST /knowledge-base/search/
+
+    Author: Adam Haile
+    Date: 10/16/2024
     """
     try:
         chunks = kb.search(
             project_name, vectorstore_name, model_name, search_parameters
         )
 
+        # Asynchronously encode the chunks in JSON format and stream the response
         async def async_json_encoder(chunks: List[Tuple[Chunk, float]]):
             yield b'{"response": ['
             for i, chunk in enumerate(chunks):
@@ -156,4 +255,5 @@ async def search(
             async_json_encoder(chunks), media_type="application/json"
         )
     except ValueError as e:
+        # Return a 404 response if the project, vectorstore, or model is not found
         return JSONResponse(status_code=404, content={"detail": str(e)})

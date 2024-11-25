@@ -1,37 +1,110 @@
+"""
+Module: llm.py (Router)
+
+This module contains the FastAPI router for the large language model. The large language model is a
+module that allows users to interact with the RosieRAG model and recieve LLM summarizations of the chunks.
+
+Classes:
+- Prompt: A recieve contract for the prompt endpoint.
+- RAGPrompt: A recieve contract for the RAG prompt endpoint.
+
+Functions:
+- craft_rag_prompt: Crafts a new RAG prompt for the model.
+- rag_prompt: Streams the RAG response to the user.
+- prompt: FastAPI endpoint for prompting the LLM.
+- rag: FastAPI endpoint for prompting the model using RAG.
+
+Attributes:
+- router: The FastAPI router object.
+- kb: The KnowledgeBase object.
+
+Author: Adam Haile
+Date: 10/30/2024
+"""
+
 import json
 import textwrap
-from typing import Iterator
 from fastapi import APIRouter
-from pydantic import BaseModel
+from dataclasses import dataclass
+from typing import Iterator, Tuple, List
 from fastapi.responses import StreamingResponse
 
 from core.logger import logger
 from core.models.llm import llm
+from core.models.chunker import Chunk
 from core.settings import get_settings
 from core.models.knowledge_base import KnowledgeBase, SearchParameters
 
 
-class Prompt(BaseModel):
+@dataclass
+class Prompt:
+    """
+    A recieve contract for the prompt endpoint.
+
+    Attributes:
+    - prompt (str): The prompt to send to the model.
+    - stream (bool): Whether to stream the response.
+
+    Methods:
+    - None
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
     prompt: str
     stream: bool = False
 
 
-class RAGPrompt(BaseModel):
+@dataclass
+class RAGPrompt:
+    """
+    A recieve contract for the RAG prompt endpoint.
+
+    Attributes:
+    - project_name (str): The name of the project.
+    - vectorstore_name (str): The name of the vectorstore.
+    - model_name (str): The name of the model.
+    - params (SearchParameters): The search parameters.
+    - stream (bool): Whether to stream the response.
+
+    Methods:
+    - None
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
     project_name: str
     vectorstore_name: str
     model_name: str
     params: SearchParameters
     stream: bool = False
 
-    class Config:
-        protected_namespaces = ()
-
 
 router = APIRouter(prefix="/llm", tags=["llm"])
 kb = KnowledgeBase()
 
 
-def craft_rag_prompt(prompt: RAGPrompt) -> str:
+def craft_rag_prompt(prompt: RAGPrompt) -> Tuple[str, List[Tuple[Chunk, float]]]:
+    """
+    Crafts a new RAG prompt for the model.
+
+    Args:
+    - prompt (RAGPrompt): The RAG prompt to craft.
+
+    Returns:
+    - str: The new RAG prompt.
+    - List[Tuple[Chunk, float]]: The list of documents and their scores.
+
+    Usage:
+    - craft_rag_prompt(prompt)
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
+    # Log the received RAG prompt and search for documents
     logger.info(f"Received RAG prompt: {prompt.params.query}")
     documents = kb.search(
         project_name=prompt.project_name,
@@ -43,6 +116,7 @@ def craft_rag_prompt(prompt: RAGPrompt) -> str:
         f"Retrieved documents: {'\n\n'.join([doc[0].content for doc in documents])}"
     )
 
+    # Craft the new RAG prompt
     new_prompt = textwrap.dedent(
         f"""Contextual Information is below:
             ------------------------------------------
@@ -52,6 +126,7 @@ def craft_rag_prompt(prompt: RAGPrompt) -> str:
             """
     )
 
+    # Apply special prompting if using local llama-cpp-python model
     if get_settings().ENVIRONMENT == "local":
         new_prompt += textwrap.dedent(
             """
@@ -61,8 +136,10 @@ def craft_rag_prompt(prompt: RAGPrompt) -> str:
             """
         )
 
+    # Append the query to the prompt
     new_prompt += f"\n\nQuery: {prompt.params.query}"
 
+    # Apply special prompting if using local llama-cpp-python model
     if get_settings().ENVIRONMENT == "local":
         new_prompt += "\n" + "Answer:"
 
@@ -73,8 +150,26 @@ def craft_rag_prompt(prompt: RAGPrompt) -> str:
 
 
 def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
+    """
+    Streams the RAG response to the user.
+
+    Args:
+    - prompt (RAGPrompt): The RAG prompt to stream.
+
+    Returns:
+    - Iterator[str]: The stream of the RAG response.
+
+    Usage:
+    - rag_prompt(prompt)
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
+    # Get the RAG prompt and documents
     contextual_prompt, documents = craft_rag_prompt(prompt)
 
+    # Prompt the LLM and yield the results
     response = ""
     generator = llm.stream_prompt(contextual_prompt)
     for item in generator:
@@ -83,6 +178,7 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
 
     logger.info(f"Model Response: {response}")
 
+    # ID the chunks and yield them
     yield "<|C|>"
     for doc in documents:
         yield json.dumps(doc[0].model_dump())
@@ -92,13 +188,30 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
 
 @router.post("/prompt/")
 async def prompt(prompt: Prompt) -> StreamingResponse:
+    """
+    FastAPI endpoint for prompting the LLM.
+
+    Args:
+    - prompt (Prompt): The prompt to send to the model.
+
+    Returns:
+    - StreamingResponse: The stream of the LLM response.
+
+    Usage:
+    - POST /llm/prompt/
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
+    # Apply special prompting if using local llama-cpp-python model
     if get_settings().ENVIRONMENT == "local":
         query = f'End your response with "Query:" Query: {prompt.prompt} Answer:'
     else:
         query = prompt.prompt
 
     if prompt.stream:
-
+        # Stream the response using JSON encoding
         def json_encoder(query):
             try:
                 generator = llm.stream_prompt(query)
@@ -119,13 +232,32 @@ async def prompt(prompt: Prompt) -> StreamingResponse:
 
         return StreamingResponse(json_encoder(query), media_type="text/event-stream")
 
+    # Statically prompt the LLM response
     return llm.prompt(query)
 
 
 @router.post("/rag/")
 async def rag(prompt: RAGPrompt) -> StreamingResponse:
+    """
+    FastAPI endpoint for prompting the model using RAG.
+
+    Args:
+    - prompt (RAGPrompt): The RAG prompt to send to the model.
+
+    Returns:
+    - StreamingResponse: The stream of the RAG response.
+
+    Usage:
+    - POST /llm/rag/
+
+    Author: Adam Haile
+    Date: 10/30/2024
+    """
+
+    # Stream the RAG response
     if prompt.stream:
         return StreamingResponse(rag_prompt(), media_type="text/plain")
 
+    # Statically prompt the RAG response
     contextual_prompt, _ = craft_rag_prompt(prompt)
     return llm.prompt(contextual_prompt)
