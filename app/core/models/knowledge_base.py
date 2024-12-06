@@ -14,25 +14,26 @@ Functions:
 Usage:
 - Import the KnowledgeBase class from this module into other modules that require a knowledge base.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/16/2024
 """
 
 import os
+import time
 from pydantic import BaseModel
 from dataclasses import dataclass, field
 from fastapi import UploadFile
 from typing import Dict, Any, List, Tuple
 
-from core.logger import logger
-from core.models.documents import Document
-from core.models.web import WebScraper
-from core.models.chunker import DocumentChunker, Chunk
-from core.models.embedding import DocumentEmbedder, embedder
-from core.models.vectorstore import VectorstoreManager, VectorstoreSearchParameters
-from core.models.term_freq_retriever import ChunkTokenizer, BM25Model
-from core.models.rrf import ReciprocalRankFusion
-from core.models.reranker import Reranker
+from app.core.logger import logger
+from app.core.models.documents import Document
+from app.core.models.web import WebScraper
+from app.core.models.chunker import DocumentChunker, Chunk
+from app.core.models.embedding import DocumentEmbedder, embedder
+from app.core.models.vectorstore import VectorstoreManager, VectorstoreSearchParameters
+from app.core.models.term_freq_retriever import ChunkTokenizer, BM25Model
+from app.core.models.rrf import ReciprocalRankFusion
+from app.core.models.reranker import Reranker
 
 
 @dataclass
@@ -52,7 +53,7 @@ class SearchParameters:
     Usage:
     - Create an instance of this class to represent search parameters.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
 
@@ -79,7 +80,7 @@ class DocumentArgs:
     Usage:
     - Create an instance of this class to represent document arguments.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
 
@@ -114,7 +115,7 @@ class KnowledgeBase(BaseModel):
     Usage:
     - Create an instance of this class to represent the RosieRAG knowledge base.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
 
@@ -134,10 +135,10 @@ class KnowledgeBase(BaseModel):
         Validates a project exists.
 
         Args:
-        - project: str: The project name.
-        - vs: str: The vectorstore name.
-        - model: str: The model name.
-        - create_if_not_exists: bool: Whether to create the project if it does not exist.
+        - `project (str)`: The project name.
+        - `vs (str)`: The vectorstore name.
+        - `model (str)`: The model name.
+        - `create_if_not_exists (bool)`: Whether to create the project if it does not exist.
 
         Returns:
         - Tuple[str, str, str]: The project path, vectorstore path, and model path.
@@ -147,8 +148,9 @@ class KnowledgeBase(BaseModel):
 
         Usage:
         - Use this method to validate a project exists before performing operations on it.
+        - `project_path, vs_path, model_path = self._validate_project("project", "vectorstore", "model")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
 
@@ -192,9 +194,9 @@ class KnowledgeBase(BaseModel):
         Creates a knowledge base.
 
         Args:
-        - project_name: str: The project name.
-        - vectorstore_name: str: The vectorstore name.
-        - model_name: str: The model name.
+        - `project_name (str)`: The project name.
+        - `vectorstore_name (str)`: The vectorstore name.
+        - `model_name (str)`: The model name.
 
         Returns:
         - None
@@ -203,9 +205,9 @@ class KnowledgeBase(BaseModel):
         - ValueError: If the project already exists.
 
         Usage:
-        - kbase.create_kb("project", "vectorstore", "model")
+        - `kbase.create_kb("project", "vectorstore", "model")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
         _, vs_path, _ = self._validate_project(
@@ -227,9 +229,9 @@ class KnowledgeBase(BaseModel):
         Adds documents to the knowledge base.
 
         Args:
-        - args: DocumentArgs: The document arguments.
-        - documents: List[UploadFile]: The list of documents to add.
-        - upload: bool: Whether to upload the documents or use pre-added ones.
+        - `args (DocumentArgs)`: The document arguments.
+        - `documents (List[UploadFile])`: The list of documents to add.
+        - `upload (bool)`: Whether to upload the documents or use pre-added ones.
 
         Returns:
         - List[str]: The list of document IDs.
@@ -238,11 +240,15 @@ class KnowledgeBase(BaseModel):
         - ValueError: If a document of the same name already exists.
 
         Usage:
-        - kbase.add_documents(args, documents)
+        - `kbase.add_documents(args, documents)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
+        # Track the time it takes to add the documents
+        start_time = time.time()
+
+        # Validate the project
         project_path, vs_path, _ = self._validate_project(
             args.project_name, args.vectorstore_name, args.model_name
         )
@@ -304,6 +310,9 @@ class KnowledgeBase(BaseModel):
         self.vs_manager.save_vectorstore(vectorstore, vs_path)
         self.bm25.create_model(args.project_name, args.model_name, tokenized_docs)
 
+        # Log the time it took to add the documents
+        logger.info(f"Documents added in {time.time() - start_time} seconds.")
+
         return ids
 
     def add_webpages(
@@ -317,9 +326,9 @@ class KnowledgeBase(BaseModel):
         Add webpages to the knowledge base.
 
         Args:
-        - project_name: str: The project name.
-        - vectorstore_name: str: The vectorstore name.
-        - model_name: str: The model name.
+        - `project_name (str)`: The project name.
+        - `vectorstore_name (str)`: The vectorstore name.
+        - `model_name (str)`: The model name.
 
         Returns:
         - List[str]: The list of document IDs.
@@ -328,9 +337,9 @@ class KnowledgeBase(BaseModel):
         - ValueError: If no documents are found in the project.
 
         Usage:
-        - kbase.add_webpages("project", "vectorstore", "model", ["https://www.somewebsite.com", "https://www.somewebsite2.com"])
+        - `kbase.add_webpages("project", "vectorstore", "model", ["https://www.somewebsite.com", "https://www.somewebsite2.com"])`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
         # Validate the project
@@ -386,9 +395,9 @@ class KnowledgeBase(BaseModel):
         Searches the knowledge base.
 
         Args:
-        - project_name: str: The project name.
-        - vectorstore_name: str: The vectorstore name.
-        - model_name: str: The model name.
+        - `project_name (str)`: The project name.
+        - `vectorstore_name (str)`: The vectorstore name.
+        - `model_name (str)`: The model name.
 
         Returns:
         - List[Tuple[Chunk, float]]: The search results and the score of the Chunk.
@@ -397,11 +406,14 @@ class KnowledgeBase(BaseModel):
         - ValueError: If the project does not exist.
 
         Usage:
-        - kbase.search("project", "vectorstore", "model", SearchParameters(query="query", n_results=10, filter={}, rerank=True))
+        - `kbase.search("project", "vectorstore", "model", SearchParameters(query="query", n_results=10, filter={}, rerank=True))`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
+
+        # Track the time it takes to search the knowledge base
+        start_time = time.time()
 
         # Validate the project
         _, vs_path, _ = self._validate_project(
@@ -435,5 +447,8 @@ class KnowledgeBase(BaseModel):
             chunks = self.reranker.cross_encode_rerank(
                 params.query, [chunk for chunk, score in chunks]
             )
+
+        # Log the time it took to search the knowledge base
+        logger.info(f"Search completed in {time.time() - start_time} seconds.")
 
         return chunks

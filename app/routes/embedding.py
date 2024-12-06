@@ -14,7 +14,7 @@ Functions:
 Attributes:
 - router: The FastAPI router object
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/9/2024
 """
 
@@ -23,8 +23,8 @@ from fastapi import APIRouter
 from typing import List
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from core.models.chunker import Chunk
-from core.models.embedding import embedder, EmbeddedChunk
+from app.core.models.chunker import Chunk
+from app.core.models.embedding import embedder, EmbeddedChunk
 
 router = APIRouter(prefix="/embedding", tags=["embedding"])
 
@@ -43,7 +43,7 @@ async def embed_query(query: str) -> JSONResponse:
     Embed a query in the RosieRAG API.
 
     Args:
-    - query (str): The query to embed.
+    - `query (str)`: The query to embed.
 
     Returns:
     - JSONResponse: The response containing the embedded query.
@@ -51,7 +51,7 @@ async def embed_query(query: str) -> JSONResponse:
     Usage:
     - POST /embedding/query/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
     return JSONResponse(
@@ -70,7 +70,7 @@ async def embed_chunks(chunks: List[Chunk]) -> StreamingResponse:
     Embed a set of chunks in the RosieRAG API.
 
     Args:
-    - chunks (List[Chunk]): The chunks to embed.
+    - `chunks (List[Chunk])`: The chunks to embed.
 
     Returns:
     - StreamingResponse: A streaming response containing the embedded chunks.
@@ -78,7 +78,7 @@ async def embed_chunks(chunks: List[Chunk]) -> StreamingResponse:
     Usage:
     - POST /embedding/chunks/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 

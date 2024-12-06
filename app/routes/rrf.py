@@ -14,28 +14,31 @@ Attributes:
 - router: The FastAPI router object.
 - rrf: The ReciprocalRankFusion object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/24/2024
 """
+
 from fastapi import APIRouter
 from typing import List, Tuple
 
-from core.models.chunker import Chunk
-from core.models.rrf import ReciprocalRankFusion
+from app.core.models.chunker import Chunk
+from app.core.models.rrf import ReciprocalRankFusion
 
 router = APIRouter(prefix="/rrf", tags=["rrf"])
 rrf = ReciprocalRankFusion()
 
 
 @router.post("/ranks/")
-async def rrf_ranks(ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int = 10) -> List[Tuple[Chunk, float]]:
+async def rrf_ranks(
+    ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int = 10
+) -> List[Tuple[Chunk, float]]:
     """
     Fuse multiple sets of documents together with a singular score using Reciprocal Rank Fusion.
 
     Args:
-    - ranks (List[List[Tuple[Chunk, float]]]): A list of ranked lists of documents.
-    - k (int): Weighting to provide to lower-ranked results
-    - n (int): Number of results to return
+    - `ranks (List[List[Tuple[Chunk, float]]])`: A list of ranked lists of documents.
+    - `k (int)`: Weighting to provide to lower-ranked results
+    - `n (int)`: Number of results to return
 
     Returns:
     - List[Tuple[Chunk, float]]: The fused ranked list of documents.
@@ -43,7 +46,7 @@ async def rrf_ranks(ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int 
     Usage:
     - POST /rrf/ranks/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/24/2024
     """
     return rrf.ranks(ranks, k, n)

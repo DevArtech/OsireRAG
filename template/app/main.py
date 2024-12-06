@@ -2,9 +2,9 @@ from fastapi import FastAPI, status, Form
 from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResponse
 
 from api.api import api_router
-from core.logger import logger
-from core.settings import get_settings
-from core.middleware.token_validator import TokenValidationMiddleware, validate_token
+from app.core.logger import logger
+from app.core.settings import get_settings
+from app.core.middleware.token_validator import TokenValidationMiddleware, validate_token
 
 app = FastAPI(
     title=get_settings().APP_NAME,

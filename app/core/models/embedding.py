@@ -13,17 +13,17 @@ Functions:
 Usage:
 - Import the embedding object from this module to use the DocumentEmbedder class (ensures the model is only loaded once).
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/9/2024
 """
 
-from typing import List, Any
 from pydantic import BaseModel
+from typing import List, ClassVar
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from core.settings import get_settings
-from core.logger import logger, COLORS
-from core.models.chunker import Chunk
+from app.core.settings import get_settings
+from app.core.logger import logger, COLORS
+from app.core.models.chunker import Chunk
 
 
 class EmbeddedChunk(Chunk):
@@ -39,7 +39,7 @@ class EmbeddedChunk(Chunk):
     Usage:
     - Create an instance of this class to represent a chunk of text with an embedding.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 
@@ -60,11 +60,11 @@ class DocumentEmbedder(BaseModel):
     Usage:
     - Use the pre-initialized embedder object to embed chunks and queries.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 
-    hf: HuggingFaceEmbeddings = None
+    hf: ClassVar[HuggingFaceEmbeddings] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -83,7 +83,7 @@ class DocumentEmbedder(BaseModel):
         Usage:
         - Use the pre-initialized embedder object to embed chunks and queries.
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/9/2024
         """
         super().__init__()
@@ -91,7 +91,7 @@ class DocumentEmbedder(BaseModel):
             f"{COLORS().WARNING}Initializing Embedding Model - This may take a second{COLORS().RESET}"
         )
         # Initialize the HuggingFaceEmbeddings object
-        self.hf = HuggingFaceEmbeddings(
+        DocumentEmbedder.hf = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={
                 "device": get_settings().DEVICE if get_settings().DEVICE else "cuda"
@@ -105,15 +105,15 @@ class DocumentEmbedder(BaseModel):
         Embed a list of Chunk objects.
 
         Args:
-        - chunks: List[Chunk]: The list of Chunk objects to embed.
+        - `chunks (List[Chunk])`: The list of Chunk objects to embed.
 
         Returns:
         - List[EmbeddedChunk]: The list of EmbeddedChunk objects with embeddings.
 
         Usage:
-        - embedded_chunks = embedder.embed_chunks(chunks)
+        - `embedded_chunks = embedder.embed_chunks(chunks)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/9/2024
         """
         embedded_docs = self.hf.embed_documents([chunk.content for chunk in chunks])
@@ -127,15 +127,15 @@ class DocumentEmbedder(BaseModel):
         Embed a string (query).
 
         Args:
-        - query: str: The query to embed.
+        - `query (str)`: The query to embed.
 
         Returns:
         - List[float]: The embedding of the query.
 
         Usage:
-        - embedded_query = embedder.embed_query(query)
+        - `embedded_query = embedder.embed_query(query)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/9/2024
         """
         return self.hf.embed_query(query)

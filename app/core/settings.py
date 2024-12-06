@@ -12,7 +12,7 @@ Functions:
 Usage:
 - Import the get_settings function from this module into the main FastAPI app.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 9/27/2024
 """
 
@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     Usage:
     - settings = get_settings().APP_NAME
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 9/27/2024
     """
 
@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     BASE_URL: str = ""
     MODEL_PATH: str = "/home/hailea/Llama-3.2-3B-Instruct.gguf"
     ROSIE_LLM: str = "http://dh-dgxh100-2.hpc.msoe.edu:8000/v1"
+    TOKENIZER_PATH: str = os.path.abspath("./app/models/tokenizer.pkl")
 
     class Config:
         env_file = ".env"
@@ -67,7 +68,7 @@ def get_settings() -> Settings:
     Usage:
     - get_settings()
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 9/27/2024
     """
     return Settings()

@@ -16,14 +16,14 @@ Attributes:
 - css: The CSS styling for the Gradio interface.
 - io: The Gradio interface object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 11/25/2024
 """
 
 import os
 import json
 import gradio as gr
-from typing import Tuple, Iterator
+from typing import Tuple, Iterator, List, Dict
 
 from app.core.interface.requestor import (
     query,
@@ -45,19 +45,19 @@ def update_project(project: str) -> Tuple[str, gr.update, gr.update, str, str]:
     Updates the project, vectorstore, and model dropdowns based on the selected project.
 
     Args:
-    - project (str): The selected project.
+    - `project (str)`: The selected project.
 
     Returns:
-    - project (str): The selected project.
-    - vs_list (gr.update): The updated vectorstore dropdown.
-    - model_list (gr.update): The updated model dropdown.
-    - selected_vs (str): The selected vectorstore.
-    - selected_model (str): The selected model.
+    - str: The selected project.
+    - gr.update: The updated vectorstore dropdown.
+    - gr.update: The updated model dropdown.
+    - str: The selected vectorstore.
+    - str: The selected model.
 
     Usage:
-    - update_project(project)
+    - `update_project(project)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 11/25/2024
     """
 
@@ -102,58 +102,78 @@ def update_project(project: str) -> Tuple[str, gr.update, gr.update, str, str]:
 
 
 def rag_query(
-    user_query: str, project: str, vs: str, model: str
-) -> Iterator[gr.update, gr.update, None]:
+    user_query: str,
+    project: str,
+    vs: str,
+    model: str,
+    conversation_history: List[Dict[str, str]],
+) -> Iterator[Tuple[gr.update, gr.update, gr.update, None]]:
     """
     Queries the RosieRAG model and returns the response.
 
     Args:
-    - user_query (str): The user's query.
-    - project (str): The selected project.
-    - vs (str): The selected vectorstore.
-    - model (str): The selected model.
+    - `user_query (str)`: The user's query.
+    - `project (str)`: The selected project.
+    - `vs (str)`: The selected vectorstore.
+    - `model (str)`: The selected model.
 
     Returns:
     - gr.update: The updated chatbot interface.
     - gr.update: The updated chunks interface.
+    - gr.update: The updated conversation history.
     - None
 
     Usage:
-    - rag_query(user_query, project, vs, model)
+    - `rag_query(user_query, project, vs, model)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 11/25/2024
     """
+    # Add the user's query to the conversation history
+    conversation_history.append({"role": "user", "content": user_query})
+
     # Query the RosieRAG model
-    response = query(project=project, vs=vs, model=model, query=user_query)
+    response = query(project=project, vs=vs, model=model, query=user_query, history=conversation_history)
 
     # Process the response
-    text_response = ""
+    assistant_response = ""
     for token in response:
 
         # Check if the response contains a token identifying the end of the LLM response
         # and the start of the chunks
-        if "<|C|>" in text_response + token:
+        if "<|C|>" in assistant_response + token:
 
             # Remove the token and return the response
-            res = (text_response + token).replace("<|C|>", "")
-            text_response = res
-            yield gr.update(
-                value=[
-                    {"role": "user", "content": user_query},
-                    {"role": "assistant", "content": text_response},
-                ]
-            ), gr.update(value=None), None
+            res = (assistant_response + token).replace("<|C|>", "")
+            assistant_response = res
+
+            if (
+                not conversation_history
+                or conversation_history[-1]["role"] != "assistant"
+            ):
+                conversation_history.append({"role": "assistant", "content": ""})
+
+            conversation_history[-1]["content"] = assistant_response
+
+            yield gr.update(value=conversation_history), gr.update(
+                value=None
+            ), gr.update(value=conversation_history), None
             break
         else:
             # Append the token to the response
-            text_response += token
-            yield gr.update(
-                value=[
-                    {"role": "user", "content": user_query},
-                    {"role": "assistant", "content": text_response},
-                ]
-            ), gr.update(value=None), None
+            assistant_response += token
+
+            if (
+                not conversation_history
+                or conversation_history[-1]["role"] != "assistant"
+            ):
+                conversation_history.append({"role": "assistant", "content": ""})
+
+            conversation_history[-1]["content"] = assistant_response
+
+            yield gr.update(value=conversation_history), gr.update(
+                value=None
+            ), gr.update(value=conversation_history), None
 
     json_value = ""
     for token in response:
@@ -162,12 +182,9 @@ def rag_query(
     # Fix the JSON formatting
     json_value = json.loads("[" + json_value.replace("}}{", "}},{") + "]")
 
-    yield gr.update(
-        value=[
-            {"role": "user", "content": user_query},
-            {"role": "assistant", "content": text_response},
-        ]
-    ), gr.update(value=json_value), None
+    yield gr.update(value=conversation_history), gr.update(value=json_value), gr.update(
+        value=conversation_history
+    ), None
 
 
 def create_knowledge_base(
@@ -177,22 +194,22 @@ def create_knowledge_base(
     Creates a new knowledge base.
 
     Args:
-    - project (str): The name of the project.
-    - vs (str): The name of the vectorstore.
-    - model (str): The name of the model.
+    - `project (str)`: The name of the project.
+    - `vs (str)`: The name of the vectorstore.
+    - `model (str)`: The name of the model.
 
     Returns:
-    - project_update (gr.update): The updated project dropdown.
-    - vs_update (gr.update): The updated vectorstore dropdown.
-    - model_update (gr.update): The updated model dropdown.
-    - project (str): The selected project.
-    - vs (str): The selected vectorstore.
-    - model (str): The selected model.
+    - gr.update: The updated project dropdown.
+    - gr.update: The updated vectorstore dropdown.
+    - gr.update: The updated model dropdown.
+    - str: The selected project.
+    - str: The selected vectorstore.
+    - str: The selected model.
 
     Usage:
-    - create_knowledge_base(project, vs, model)
+    - `create_knowledge_base(project, vs, model)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 11/25/2024
     """
     # Create the knowledge base
@@ -252,17 +269,17 @@ def refresh_all() -> (
     - None
 
     Returns:
-    - project_update (gr.update): The updated project dropdown.
-    - vs_update (gr.update): The updated vectorstore dropdown.
-    - model_update (gr.update): The updated model dropdown.
-    - selected_project (gr.update): The selected project.
-    - selected_vs (gr.update): The selected vectorstore.
-    - selected_model (gr.update): The selected model.
+    - gr.update: The updated project dropdown.
+    - gr.update: The updated vectorstore dropdown.
+    - gr.update: The updated model dropdown.
+    - gr.update: The selected project.
+    - gr.update: The selected vectorstore.
+    - gr.update: The selected model.
 
     Usage:
-    - refresh_all()
+    - `refresh_all()`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 11/25/2024
     """
     # Get the projects, vectorstores, and models
@@ -493,6 +510,10 @@ with gr.Blocks() as home:
                 with gr.Column(scale=4):
                     gr.Markdown("## RAG Chat Interface")
                     chatbot = gr.Chatbot(height=425, type="messages")
+
+                    # Conversation history state
+                    conversation_history = gr.State(value=[])
+
                     with gr.Row():
                         textbox = gr.Textbox(
                             show_label=False,
@@ -508,8 +529,14 @@ with gr.Blocks() as home:
             # Query the RosieRAG model based on the user's input
             textbox.submit(
                 fn=rag_query,
-                inputs=[textbox, selected_project, selected_vs, selected_model],
-                outputs=[chatbot, chunks, textbox],
+                inputs=[
+                    textbox,
+                    selected_project,
+                    selected_vs,
+                    selected_model,
+                    conversation_history,
+                ],
+                outputs=[chatbot, chunks, conversation_history, textbox],
             )
 
         # Add the documents to the knowledge base

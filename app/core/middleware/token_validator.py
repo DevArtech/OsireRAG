@@ -11,15 +11,16 @@ Functions:
 Usage:
 - Add the TokenValidationMiddleware to the FastAPI app middleware stack.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/16/2024
 """
 
 from fastapi import Request
+from typing import Callable, Any
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.settings import get_settings
+from app.core.settings import get_settings
 
 
 class TokenValidationMiddleware(BaseHTTPMiddleware):
@@ -36,11 +37,11 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
     Usage:
     - Add the TokenValidationMiddleware to the FastAPI app middleware stack.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Any:
         """
         Called by FastAPI when a request is received. Validates the API token in the request.
         """

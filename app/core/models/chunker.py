@@ -11,7 +11,7 @@ Functions:
 Usage:
 - Import the DocumentChunker class from this module into the main FastAPI app.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/16/2024
 """
 
@@ -25,15 +25,15 @@ from spacy.language import Language
 warnings.filterwarnings("ignore", message=r"\[W095\]")
 
 import spacy
-from typing import List, Dict
 from pydantic import BaseModel
 from langchain_text_splitters import (
     HTMLHeaderTextSplitter,
     RecursiveCharacterTextSplitter,
 )
+from typing import List, Dict, ClassVar
 
-from core.settings import get_settings
-from core.models.documents import Document
+from app.core.settings import get_settings
+from app.core.models.documents import Document
 
 headers_to_split_on = [
     ("h1", "Header 1"),
@@ -57,7 +57,7 @@ class Chunk(BaseModel):
     Usage:
     - Create an instance of this class to represent a chunk of text.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 
@@ -80,12 +80,12 @@ class DocumentChunker(BaseModel):
     Methods:
     - chunk_document: Chunks a document into smaller pieces.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 
-    nlp: Language = spacy.load("en_core_web_sm")
-    splitter: HTMLHeaderTextSplitter = HTMLHeaderTextSplitter(headers_to_split_on)
+    nlp: ClassVar[Language] = spacy.load("en_core_web_sm")
+    splitter: ClassVar[HTMLHeaderTextSplitter] = HTMLHeaderTextSplitter(headers_to_split_on)
 
     # Config class to allow Language and HTMLHeaderTextSplitter to be
     # passed as type hints without errors from Pydantic
@@ -97,13 +97,16 @@ class DocumentChunker(BaseModel):
         Chunks a document into smaller pieces.
 
         Args:
-        - document: Document: The document to chunk.
-        - n: int: The number of sentences to include in each chunk.
+        - `document (Document)`: The document to chunk.
+        - `n (int)`: The number of sentences to include in each chunk.
 
         Returns:
         - List[Chunk]: The chunks of the document.
 
-        Author: Adam Haile
+        Usage:
+        - `chunks = chunk_document(document, n=7)`
+
+        Author: Adam Haile  
         Date: 10/9/2024
         """
 

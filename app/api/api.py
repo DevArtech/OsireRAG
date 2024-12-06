@@ -11,13 +11,13 @@ Functions:
 Usage:
 - Import the api_router from this module into the main FastAPI app.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/16/2024
 """
 
 from fastapi import APIRouter
 
-from routes import (
+from app.routes import (
     documents,
     web,
     chunker,

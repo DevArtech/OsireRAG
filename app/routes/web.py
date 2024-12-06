@@ -13,14 +13,15 @@ Functions:
 Attributes:
 - router: The FastAPI router object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/7/2024
 """
+
 from typing import List
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from core.models.web import WebScraper
+from app.core.models.web import WebScraper
 
 router = APIRouter(prefix="/web", tags=["web"])
 web = WebScraper()
@@ -47,7 +48,7 @@ async def upload_web(project_name: str, web_pages: List[str]) -> JSONResponse:
     Usage:
     - POST /web/{project_name}/upload/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
     web.add_pages(project_name, web_pages)

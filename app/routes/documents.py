@@ -17,7 +17,7 @@ Functions:
 Attributes:
 - router: The FastAPI router object
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/7/2024
 """
 
@@ -26,7 +26,7 @@ from typing import List
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import JSONResponse, Response
 
-from core.models.documents import Document
+from app.core.models.documents import Document
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -44,7 +44,7 @@ async def create_project(project_name: str) -> JSONResponse:
     Create a new project to store documents.
 
     Args:
-    - project_name (str): The name of the project to create.
+    - `project_name (str)`: The name of the project to create.
 
     Returns:
     - JSONResponse: The response object containing the status code and message.
@@ -55,7 +55,7 @@ async def create_project(project_name: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/create/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
     project_path = f"./.rosierag/{project_name}"
@@ -86,7 +86,7 @@ async def list_documents(project_name: str) -> JSONResponse:
     List all documents currently stored in the RosieRAG API at the given project.
 
     Args:
-    - project_name (str): The name of the project to list documents from.
+    - `project_name (str)`: The name of the project to list documents from.
 
     Returns:
     - JSONResponse: The response object containing the status code and list of documents.
@@ -97,7 +97,7 @@ async def list_documents(project_name: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/list/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
     documents = []
@@ -130,8 +130,8 @@ async def upload_documents(project_name: str, file: UploadFile) -> JSONResponse:
     Upload a new document.
 
     Args:
-    - project_name (str): The name of the project to upload the document to.
-    - file (UploadFile): The file to upload.
+    - `project_name (str)`: The name of the project to upload the document to.
+    - `file (UploadFile)`: The file to upload.
 
     Returns:
     - JSONResponse: The response object containing the status code and message.
@@ -142,7 +142,7 @@ async def upload_documents(project_name: str, file: UploadFile) -> JSONResponse:
     Usage:
     - POST /documents/{project_name}/upload/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
 
@@ -180,8 +180,8 @@ async def retrieve_document(project_name: str, file: str) -> JSONResponse:
     Retrieve a specific document by file name and extension.
 
     Args:
-    - project_name (str): The name of the project to retrieve the document from.
-    - file (str): The name of the document to retrieve.
+    - `project_name (str)`: The name of the project to retrieve the document from.
+    - `file (str)`: The name of the document to retrieve.
 
     Returns:
     - JSONResponse: The response object containing the status code and document content.
@@ -192,7 +192,7 @@ async def retrieve_document(project_name: str, file: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/retrieve/{file}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
 
@@ -237,8 +237,8 @@ async def delete_documents(project_name: str, file: str) -> Response:
     Delete a document.
 
     Args:
-    - project_name (str): The name of the project to delete the document from.
-    - file (str): The name of the document to delete.
+    - `project_name (str)`: The name of the project to delete the document from.
+    - `file (str)`: The name of the document to delete.
 
     Returns:
     - Response: The response object containing the status code.
@@ -249,7 +249,7 @@ async def delete_documents(project_name: str, file: str) -> Response:
     Usage:
     - DELETE /documents/{project_name}/delete/{file}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/7/2024
     """
     # Validate the project exists

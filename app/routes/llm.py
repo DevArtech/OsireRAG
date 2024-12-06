@@ -18,7 +18,7 @@ Attributes:
 - router: The FastAPI router object.
 - kb: The KnowledgeBase object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/30/2024
 """
 
@@ -26,14 +26,15 @@ import json
 import textwrap
 from fastapi import APIRouter
 from dataclasses import dataclass
-from typing import Iterator, Tuple, List
+from pydantic import BaseModel, field_validator
 from fastapi.responses import StreamingResponse
+from typing import Iterator, Tuple, List, Optional, Dict, Any
 
-from core.logger import logger
-from core.models.llm import llm
-from core.models.chunker import Chunk
-from core.settings import get_settings
-from core.models.knowledge_base import KnowledgeBase, SearchParameters
+from app.core.logger import logger
+from app.core.models.llm import llm
+from app.core.models.chunker import Chunk
+from app.core.settings import get_settings
+from app.core.models.knowledge_base import KnowledgeBase, SearchParameters
 
 
 @dataclass
@@ -48,7 +49,7 @@ class Prompt:
     Methods:
     - None
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
@@ -56,8 +57,7 @@ class Prompt:
     stream: bool = False
 
 
-@dataclass
-class RAGPrompt:
+class RAGPrompt(BaseModel):
     """
     A recieve contract for the RAG prompt endpoint.
 
@@ -71,7 +71,7 @@ class RAGPrompt:
     Methods:
     - None
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
@@ -80,6 +80,28 @@ class RAGPrompt:
     model_name: str
     params: SearchParameters
     stream: bool = False
+    conversation_history: Optional[List[Dict[str, str]]] = None
+
+    def __init__(self, **data: Any) -> None:
+        """
+        Custom initialization method for the RAGPrompt class.
+
+        Args:
+        - `data (Dict)`: The data to initialize the RAGPrompt object with.
+
+        Returns:
+        - None
+
+        Usage:
+        - `rag_prompt = RAGPrompt(project_name="project", vectorstore_name="vs", model_name="model", params=params)`
+
+        Author: Adam Haile  
+        Date: 12/2/2024
+        """
+        super().__init__(**data)
+        
+        # Create a deep copy of the conversation history
+        self.conversation_history = [{k: v for k, v in item.items()} for item in self.conversation_history]
 
 
 router = APIRouter(prefix="/llm", tags=["llm"])
@@ -91,16 +113,16 @@ def craft_rag_prompt(prompt: RAGPrompt) -> Tuple[str, List[Tuple[Chunk, float]]]
     Crafts a new RAG prompt for the model.
 
     Args:
-    - prompt (RAGPrompt): The RAG prompt to craft.
+    - `prompt (RAGPrompt)`: The RAG prompt to craft.
 
     Returns:
     - str: The new RAG prompt.
     - List[Tuple[Chunk, float]]: The list of documents and their scores.
 
     Usage:
-    - craft_rag_prompt(prompt)
+    - `craft_rag_prompt(prompt)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
@@ -154,15 +176,15 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
     Streams the RAG response to the user.
 
     Args:
-    - prompt (RAGPrompt): The RAG prompt to stream.
+    - `prompt (RAGPrompt)`: The RAG prompt to stream.
 
     Returns:
     - Iterator[str]: The stream of the RAG response.
 
     Usage:
-    - rag_prompt(prompt)
+    - `rag_prompt(prompt)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
@@ -171,7 +193,9 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
 
     # Prompt the LLM and yield the results
     response = ""
-    generator = llm.stream_prompt(contextual_prompt)
+    generator = llm.stream_prompt(
+        contextual_prompt, history=prompt.conversation_history
+    )
     for item in generator:
         yield item.replace('"', '\\"')
         response += item.replace('"', '\\"')
@@ -192,7 +216,7 @@ async def prompt(prompt: Prompt) -> StreamingResponse:
     FastAPI endpoint for prompting the LLM.
 
     Args:
-    - prompt (Prompt): The prompt to send to the model.
+    - `prompt (Prompt)`: The prompt to send to the model.
 
     Returns:
     - StreamingResponse: The stream of the LLM response.
@@ -200,7 +224,7 @@ async def prompt(prompt: Prompt) -> StreamingResponse:
     Usage:
     - POST /llm/prompt/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
@@ -242,7 +266,7 @@ async def rag(prompt: RAGPrompt) -> StreamingResponse:
     FastAPI endpoint for prompting the model using RAG.
 
     Args:
-    - prompt (RAGPrompt): The RAG prompt to send to the model.
+    - `prompt (RAGPrompt)`: The RAG prompt to send to the model.
 
     Returns:
     - StreamingResponse: The stream of the RAG response.
@@ -250,13 +274,13 @@ async def rag(prompt: RAGPrompt) -> StreamingResponse:
     Usage:
     - POST /llm/rag/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/30/2024
     """
 
     # Stream the RAG response
     if prompt.stream:
-        return StreamingResponse(rag_prompt(), media_type="text/plain")
+        return StreamingResponse(rag_prompt(prompt), media_type="text/plain")
 
     # Statically prompt the RAG response
     contextual_prompt, _ = craft_rag_prompt(prompt)

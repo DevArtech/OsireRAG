@@ -10,14 +10,14 @@ Functions:
 Usage:
 - Import the ReciprocalRankFusion class from this module into other modules to merge and rerank document lists.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/24/2024
 """
 
 from pydantic import BaseModel
 from typing import List, Tuple
 
-from core.models.chunker import Chunk
+from app.core.models.chunker import Chunk
 
 
 class ReciprocalRankFusion(BaseModel):
@@ -30,7 +30,7 @@ class ReciprocalRankFusion(BaseModel):
     Usage:
     - Instantiate this class and call the ranks method to merge and rerank document lists.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/24/2024
     """
 
@@ -41,9 +41,9 @@ class ReciprocalRankFusion(BaseModel):
         Combines rankings from multiple rankers using the RRF algorithm.
 
         Args:
-        - ranks: List[List[Tuple[Chunk, float]]]: A list of ranked document lists, where each document is paired with its score.
-        - k: int: The RRF parameter for scaling the rank contribution. Default is 60.
-        - n: int: The maximum number of ranked results to return. Default is 10.
+        - `ranks (List[List[Tuple[Chunk, float]]])`: A list of ranked document lists, where each document is paired with its sapp.core.
+        - `k (int)`: The RRF parameter for scaling the rank contribution. Default is 60.
+        - `n (int)`: The maximum number of ranked results to return. Default is 10.
 
         Returns:
         - List[Tuple[Chunk, float]]: A list of the top `n` documents, paired with their scores.
@@ -52,10 +52,12 @@ class ReciprocalRankFusion(BaseModel):
         - ValueError: If the input ranks list is empty.
 
         Usage:
-        - rrf = ReciprocalRankFusion()
-        - combined_ranks = rrf.ranks(ranks=[ranker1_results, ranker2_results], k=60, n=10)
+        - ```
+        rrf = ReciprocalRankFusion()
+        combined_ranks = rrf.ranks(ranks=[ranker1_results, ranker2_results], k=60, n=10)
+        ```
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/24/2024
         """
 

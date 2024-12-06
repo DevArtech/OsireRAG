@@ -13,7 +13,7 @@ Attributes:
 - router: The FastAPI router object.
 - chunker: The DocumentChunker object used to chunk documents.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/9/2024
 """
 
@@ -25,8 +25,8 @@ from typing import List
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import StreamingResponse
 
-from core.models.documents import Document
-from core.models.chunker import DocumentChunker, Chunk
+from app.core.models.documents import Document
+from app.core.models.chunker import DocumentChunker, Chunk
 
 router = APIRouter(prefix="/chunker", tags=["chunker"])
 chunker = DocumentChunker()
@@ -56,7 +56,7 @@ async def chunk_file(
     Usage:
     - POST /chunker/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/9/2024
     """
 

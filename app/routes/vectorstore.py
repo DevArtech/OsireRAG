@@ -17,18 +17,19 @@ Attributes:
 - router: The FastAPI router object.
 - vs_manager: The VectorstoreManager object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/13/2024
 """
+
 import os
 import json
 from typing import List, Tuple
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from core.models.chunker import Chunk
-from core.models.vectorstore import VectorstoreManager, VectorstoreSearchParameters
-from core.models.embedding import EmbeddedChunk
+from app.core.models.chunker import Chunk
+from app.core.models.vectorstore import VectorstoreManager, VectorstoreSearchParameters
+from app.core.models.embedding import EmbeddedChunk
 
 router = APIRouter(prefix="/vectorstore", tags=["vectorstore"])
 vs_manager: VectorstoreManager = VectorstoreManager()
@@ -48,8 +49,8 @@ async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONRe
     Create a new vectorstore.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
 
     Returns:
     - JSONResponse: The response message.
@@ -57,7 +58,7 @@ async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONRe
     Usage:
     - POST /vectorstore/{project_name}/create/{vectorstore_name}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
 
@@ -96,9 +97,9 @@ async def add_chunks(
     Add chunks to a vectorstore.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - chunks (List[EmbeddedChunk]): The list of chunks to add.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `chunks (List[EmbeddedChunk])`: The list of chunks to add.
 
     Returns:
     - JSONResponse: The response message.
@@ -106,7 +107,7 @@ async def add_chunks(
     Usage:
     - POST /vectorstore/{project_name}/add/{vectorstore_name}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
     # Validate the project exists
@@ -143,9 +144,9 @@ async def get_chunks(
     Get chunks from a vectorstore.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - ids (List[str]): The list of IDs of the chunks to get.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `ids (List[str])`: The list of IDs of the chunks to get.
 
     Returns:
     - StreamingResponse: The response message.
@@ -153,7 +154,7 @@ async def get_chunks(
     Usage:
     - POST /vectorstore/{project_name}/get/{vectorstore_name}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
     # Validate the project exists
@@ -220,9 +221,9 @@ async def search(
     Search for chunks in a vectorstore.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - search_parameters (VectorstoreSearchParameters): The search parameters.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `search_parameters (VectorstoreSearchParameters)`: The search parameters.
 
     Returns:
     - StreamingResponse: The response message.
@@ -230,7 +231,7 @@ async def search(
     Usage:
     - POST /vectorstore/{project_name}/search/{vectorstore_name}/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
     # Validate the project exists

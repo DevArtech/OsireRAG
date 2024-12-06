@@ -12,7 +12,7 @@ Functions:
 Usage:
 - Import the Document class from this module into other modules that require document representation.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 9/25/2024
 """
 
@@ -38,7 +38,7 @@ class Document(BaseModel):
     Usage:
     - document = Document(directory="/path/to/file.txt")
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
 
@@ -51,7 +51,7 @@ class Document(BaseModel):
         Custom initialization method for the Document class. Reads the content of the document file
 
         Args:
-        - data: Dict: The data to initialize the Document object with.
+        - `data (Dict)`: The data to initialize the Document object with.
 
         Returns:
         - None
@@ -60,9 +60,9 @@ class Document(BaseModel):
         - ValueError: If the file type is not supported.
 
         Usage:
-        - document = Document(directory="/path/to/file.txt")
+        - `document = Document(directory="/path/to/file.txt")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/16/2024
         """
         super().__init__(**data)

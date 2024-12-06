@@ -12,7 +12,7 @@ Functions:
 Usage:
 - Import the logger object from this module into the main FastAPI app, along with COLORS if you wish to use color.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/10/2024
 """
 

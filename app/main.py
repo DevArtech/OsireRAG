@@ -14,7 +14,7 @@ Attributes:
 - app: The FastAPI application object.
 - rosie_path: The URL of the RosieRAG application.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 9/24/2024
 """
 
@@ -23,11 +23,11 @@ import gradio as gr
 from fastapi import FastAPI, status
 from fastapi.responses import Response
 
-from api.api import api_router
-from core.logger import logger
-from core.interface.gradio import io
-from core.settings import get_settings
-from core.middleware.token_validator import TokenValidationMiddleware
+from app.api.api import api_router
+from app.core.logger import logger
+from app.core.interface.gradio import io
+from app.core.settings import get_settings
+from app.core.middleware.token_validator import TokenValidationMiddleware
 
 # Validate the rosierag directory exists
 os.makedirs("./.rosierag", exist_ok=True)
@@ -63,6 +63,7 @@ app = gr.mount_gradio_app(
     path="/",
     root_path=get_settings().BASE_URL,
     app_kwargs={"redirect_slashes": True},
+    favicon_path="./icon.png",
 )
 
 

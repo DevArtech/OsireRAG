@@ -10,7 +10,7 @@ Functions:
 Usage:
 - Import the WebScraper class to download and save web pages to a specific project directory.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 11/19/2024
 """
 
@@ -35,7 +35,7 @@ class WebScraper(BaseModel):
     - scraper = WebScraper()
     - page_files = scraper.add_pages(project_name="example_project", web_pages=["https://example.com"])
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 11/19/2024
     """
 
@@ -44,8 +44,8 @@ class WebScraper(BaseModel):
         Downloads web pages and saves them as HTML files in the project directory.
 
         Args:
-        - project_name: str: The name of the project to associate the saved files with.
-        - web_pages: List[str]: A list of web page URLs to download.
+        - `project_name (str)`: The name of the project to associate the saved files with.
+        - `web_pages (List[str])`: A list of web page URLs to download.
 
         Returns:
         - List[UploadFile]: A list of FastAPI UploadFile objects representing the saved web pages.
@@ -54,9 +54,9 @@ class WebScraper(BaseModel):
         - JSONResponse: If the project directory does not exist or a page fails to download.
 
         Usage:
-        - page_files = scraper.add_pages(project_name="example_project", web_pages=["https://example.com"])
+        - `page_files = scraper.add_pages(project_name="example_project", web_pages=["https://example.com"])`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/7/2024
         """
         # Define the project directory path

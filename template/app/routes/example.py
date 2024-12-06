@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter
 from fastapi.responses import Response, JSONResponse
 
-from core.models import Example
+from app.core.models import Example
 
 router = APIRouter(prefix="/test", tags=["test"])
 

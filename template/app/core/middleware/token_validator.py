@@ -3,7 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.settings import get_settings
+from app.core.settings import get_settings
 
 
 def validate_token(token: str) -> bool:

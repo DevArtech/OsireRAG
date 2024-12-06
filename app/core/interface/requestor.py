@@ -15,7 +15,7 @@ Functions:
 Usage:
 - Import the functions from this module into your Gradio application.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/20/2024
 """
 
@@ -23,10 +23,10 @@ import io
 import gradio as gr
 from gradio import exceptions
 from fastapi import UploadFile
-from typing import List, Tuple, Iterator
+from typing import List, Tuple, Iterator, Dict, Optional
 
-from core.models.knowledge_base import KnowledgeBase, DocumentArgs
-from routes.llm import rag_prompt, RAGPrompt, SearchParameters
+from app.core.models.knowledge_base import KnowledgeBase, DocumentArgs
+from app.routes.llm import rag_prompt, RAGPrompt, SearchParameters
 
 kb = KnowledgeBase()
 
@@ -36,9 +36,9 @@ def new_knowledge_base(project: str, vs: str, model: str) -> None:
     Creates a new knowledge base.
 
     Args:
-    - project (str): The name of the project.
-    - vs (str): The name of the vector store.
-    - model (str): The name of the model.
+    - `project (str)`: The name of the project.
+    - `vs (str)`: The name of the vector store.
+    - `model (str)`: The name of the model.
 
     Returns:
     - None
@@ -47,9 +47,9 @@ def new_knowledge_base(project: str, vs: str, model: str) -> None:
     - ValueError: If the knowledge base cannot be created.
 
     Usage:
-    - new_knowledge_base(project, vs, model)
+    - `new_knowledge_base(project, vs, model)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/20/2024
     """
     try:
@@ -64,10 +64,10 @@ def add_webpages(project: str, vs: str, model: str, urls: str) -> Tuple[None, No
     Adds webpages to the knowledge base.
 
     Args:
-    - project (str): The name of the project.
-    - vs (str): The name of the vector store.
-    - model (str): The name of the model.
-    - urls (str): A string with comma separated URLs of the webpages.
+    - `project (str)`: The name of the project.
+    - `vs (str)`: The name of the vector store.
+    - `model (str)`: The name of the model.
+    - `urls (str)`: A string with comma separated URLs of the webpages.
 
     Returns:
     - None
@@ -76,9 +76,9 @@ def add_webpages(project: str, vs: str, model: str, urls: str) -> Tuple[None, No
     - ValueError: If the webpages cannot be added.
 
     Usage:
-    - add_webpages(project, vs, model, urls)
+    - `add_webpages(project, vs, model, urls)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/20/2024
     """
     if urls:
@@ -104,10 +104,10 @@ def add_documents(
     Adds documents to the knowledge base.
 
     Args:
-    - project (str): The name of the project.
-    - vs (str): The name of the vector store.
-    - model (str): The name of the model.
-    - documents (List[str]): A list of file paths for the documents.
+    - `project (str)`: The name of the project.
+    - `vs (str)`: The name of the vector store.
+    - `model (str)`: The name of the model.
+    - `documents (List[str])`: A list of file paths for the documents.
 
     Returns:
     - None
@@ -116,9 +116,9 @@ def add_documents(
     - ValueError: If the documents cannot be added.
 
     Usage:
-    - add_documents(project, vs, model, documents)
+    - `add_documents(project, vs, model, documents)`
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/20/2024
     """
     if documents:
@@ -148,24 +148,26 @@ def add_documents(
     return None, None
 
 
-def query(project: str, vs: str, model: str, query: str) -> Iterator[str]:
+def query(project: str, vs: str, model: str, query: str, history: Optional[List[Dict[str, str]]] = None) -> Iterator[str]:
     """
     Queries the knowledge base for an LLM response.
 
     Args:
-    - project (str): The name of the project.
-    - vs (str): The name of the vector store.
-    - model (str): The name of the model.
-    - query (str): The query to search for.
+    - `project (str)`: The name of the project.
+    - `vs (str)`: The name of the vector store.
+    - `model (str)`: The name of the model.
+    - `query (str)`: The query to search for.
 
     Returns:
     - Iterator[str]: A generator that yields the LLM response.
 
     Usage:
-    - for response in query(project, vs, model, query):
+    - ```
+    for response in query(project, vs, model, query):
         print(response)
+    ```
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/20/2024
     """
     prompt = RAGPrompt(
@@ -174,6 +176,7 @@ def query(project: str, vs: str, model: str, query: str) -> Iterator[str]:
         model_name=model,
         params=SearchParameters(query=query, n_results=10, filter={}, rerank=True),
         stream=True,
+        conversation_history=history,
     )
 
     # Yield each chunk as it's recieved from the RAGPrompt generator

@@ -12,7 +12,7 @@ Functions:
 Usage:
 - Import the BM25Model and ChunkTokenizer classes from this module to tokenize documents and perform BM25 searches.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/23/2024
 """
 
@@ -23,11 +23,11 @@ import numpy as np
 from pydantic import BaseModel
 from rank_bm25 import BM25Okapi
 from nltk.corpus import stopwords
-from typing import List, Tuple, Any
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from typing import List, Tuple, Any, ClassVar
 
-from core.models.chunker import Chunk
+from app.core.models.chunker import Chunk
 
 
 class TokenizedChunk(Chunk):
@@ -40,7 +40,7 @@ class TokenizedChunk(Chunk):
     Usage:
     - Use this class to represent a text chunk after tokenization.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
 
@@ -62,12 +62,15 @@ class ChunkTokenizer(BaseModel):
     Usage:
     - Instantiate this class to tokenize queries and document chunks for BM25.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
 
-    stop_words: set = set(stopwords.words("english"))
-    lemmatizer: Any = WordNetLemmatizer()
+    stop_words: ClassVar[set] = set(stopwords.words("english"))
+    lemmatizer: ClassVar[WordNetLemmatizer] = WordNetLemmatizer()
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def __init__(self):
         """
@@ -79,7 +82,7 @@ class ChunkTokenizer(BaseModel):
         Usage:
         - tokenizer = ChunkTokenizer()
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/23/2024
         """
         super().__init__()
@@ -90,15 +93,15 @@ class ChunkTokenizer(BaseModel):
         Tokenizes and lemmatizes a query string.
 
         Args:
-        - query: str: The query to tokenize.
+        - `query (str)`: The query to tokenize.
 
         Returns:
         - List[str]: A list of lemmatized tokens from the query.
 
         Usage:
-        - tokens = tokenizer.tokenize_query("example query")
+        - `tokens = tokenizer.tokenize_query("example query")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/23/2024
         """
         # Tokenize and lemmatize the query
@@ -115,15 +118,15 @@ class ChunkTokenizer(BaseModel):
         Tokenizes and lemmatizes the content of document chunks.
 
         Args:
-        - chunks: List[Chunk]: The list of document chunks to tokenize.
+        - `chunks (List[Chunk])`: The list of document chunks to tokenize.
 
         Returns:
         - List[TokenizedChunk]: A list of TokenizedChunk objects.
 
         Usage:
-        - tokenized_chunks = tokenizer.tokenize_documents(chunks)
+        - `tokenized_chunks = tokenizer.tokenize_documents(chunks)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/23/2024
         """
         # Tokenize and lemmatize the content of each chunk
@@ -152,7 +155,7 @@ class BM25Model(BaseModel):
     Usage:
     - Instantiate this class to create, load, and search BM25 indices.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
 
@@ -163,10 +166,10 @@ class BM25Model(BaseModel):
         Creates and saves a BM25 model for a set of tokenized document chunks.
 
         Args:
-        - project_name: str: The name of the project.
-        - model_name: str: The name of the model.
-        - chunks: List[TokenizedChunk]: The list of tokenized document chunks.
-        - kwargs: dict: Additional arguments for BM25Okapi.
+        - `project_name (str)`: The name of the project.
+        - `model_name (str)`: The name of the model.
+        - `chunks (List[TokenizedChunk])`: The list of tokenized document chunks.
+        - `kwargs (Dict[Any, Any])`: Additional arguments for BM25Okapi.
 
         Returns:
         - None
@@ -175,7 +178,7 @@ class BM25Model(BaseModel):
         - FileExistsError: If the model directory already exists.
 
         Usage:
-        - bm25.create_model("project", "model", tokenized_chunks)
+        - `bm25.create_model("project", "model", tokenized_chunks)`
         """
         # Create the model directory if it does not exist
         path = os.path.join("./.rosierag", project_name, model_name)
@@ -202,16 +205,16 @@ class BM25Model(BaseModel):
         Loads a BM25 model and tokenized documents from disk.
 
         Args:
-        - project_name: str: The name of the project.
-        - model_name: str: The name of the model.
+        - `project_name (str)`: The name of the project.
+        - `model_name (str)`: The name of the model.
 
         Returns:
         - Tuple[List[TokenizedChunk], BM25Okapi]: The tokenized documents and the BM25 model.
 
         Usage:
-        - tokenized_docs, bm25 = bm25.load_model("project", "model")
+        - `tokenized_docs, bm25 = bm25.load_model("project", "model")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/23/2024
         """
         # Load the tokenized documents and BM25 model from disk
@@ -238,18 +241,18 @@ class BM25Model(BaseModel):
         Performs a BM25 search on a tokenized query.
 
         Args:
-        - tokenized_query: List[str]: The tokenized query.
-        - model: BM25Okapi: The BM25 model to use for searching.
-        - chunks: List[TokenizedChunk]: The list of tokenized document chunks.
-        - k: int: The number of top results to return.
+        - `tokenized_query (List[str])`: The tokenized query.
+        - `model (BM25Okapi)`: The BM25 model to use for searching.
+        - `chunks (List[TokenizedChunk])`: The list of tokenized document chunks.
+        - `k (int)`: The number of top results to return.
 
         Returns:
         - List[Tuple[Chunk, float]]: A list of document chunks and their scores.
 
         Usage:
-        - results = bm25.search(tokenized_query, bm25_model, tokenized_chunks, k=10)
+        - `results = bm25.search(tokenized_query, bm25_model, tokenized_chunks, k=10)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/23/2024
         """
         # Perform the BM25 search

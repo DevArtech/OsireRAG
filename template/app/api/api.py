@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from routes import example
+from app.routes import example
 
 api_router = APIRouter()
 

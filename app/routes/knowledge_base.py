@@ -18,7 +18,7 @@ Attributes:
 - kb: The KnowledgeBase object.
 - router: The FastAPI router object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/16/2024
 """
 
@@ -27,8 +27,8 @@ from typing import List, Tuple
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from core.models.chunker import Chunk
-from core.models.knowledge_base import KnowledgeBase, SearchParameters, DocumentArgs
+from app.core.models.chunker import Chunk
+from app.core.models.knowledge_base import KnowledgeBase, SearchParameters, DocumentArgs
 
 kb = KnowledgeBase()
 router = APIRouter(prefix="/knowledge-base", tags=["knowledge_base"])
@@ -49,9 +49,9 @@ async def create_kb(
     Create a new knowledge base.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - model_name (str): The name of the model.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `model_name (str)`: The name of the model.
 
     Returns:
     - JSONResponse: The response message.
@@ -59,7 +59,7 @@ async def create_kb(
     Usage:
     - GET /knowledge-base/create-kb/?project_name=example_project&vectorstore_name=example_vectorstore&model_name=example_model
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
     try:
@@ -88,10 +88,10 @@ async def add_documents(
     Add a document to the knowledge base.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - model_name (str): The name of the model.
-    - documents (List[UploadFile]): The list of documents to add.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `model_name (str)`: The name of the model.
+    - `documents (List[UploadFile])`: The list of documents to add.
 
     Returns:
     - JSONResponse: The response message.
@@ -99,7 +99,7 @@ async def add_documents(
     Usage:
     - POST /knowledge-base/add-documents/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
     try:
@@ -138,9 +138,9 @@ async def add_webpages(
     Add a webpage to the knowledge base.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - model_name (str): The name of the model.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `model_name (str)`: The name of the model.
 
     Returns:
     - JSONResponse: The response message.
@@ -148,7 +148,7 @@ async def add_webpages(
     Usage:
     - POST /knowledge-base/add-webpages/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
     try:
@@ -179,9 +179,9 @@ async def add_project(
     Add a project to the knowledge base.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - model_name (str): The name of the model.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `model_name (str)`: The name of the model.
 
     Returns:
     - JSONResponse: The response message.
@@ -189,7 +189,7 @@ async def add_project(
     Usage:
     - POST /knowledge-base/add-project/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
     try:
@@ -219,9 +219,9 @@ async def search(
     Search the knowledge base.
 
     Args:
-    - project_name (str): The name of the project.
-    - vectorstore_name (str): The name of the vectorstore.
-    - model_name (str): The name of the model.
+    - `project_name (str)`: The name of the project.
+    - `vectorstore_name (str)`: The name of the vectorstore.
+    - `model_name (str)`: The name of the model.
 
     Returns:
     - StreamingResponse: The top chunks found for the given query.
@@ -229,7 +229,7 @@ async def search(
     Usage:
     - POST /knowledge-base/search/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/16/2024
     """
     try:

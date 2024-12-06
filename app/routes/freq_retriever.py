@@ -18,15 +18,15 @@ Attributes:
 - retriever: The BM25 model object.
 - tokenizer: The ChunkTokenizer object.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/23/2024
 """
 
 from fastapi import APIRouter
 from typing import List, Tuple
 
-from core.models.chunker import Chunk
-from core.models.term_freq_retriever import BM25Model, ChunkTokenizer, TokenizedChunk
+from app.core.models.chunker import Chunk
+from app.core.models.term_freq_retriever import BM25Model, ChunkTokenizer, TokenizedChunk
 
 router = APIRouter(prefix="/freq_retriever", tags=["freq_retriever"])
 retriever = BM25Model()
@@ -39,7 +39,7 @@ async def tokenize(chunks: List[Chunk]) -> List[TokenizedChunk]:
     Tokenizes a list of chunks.
 
     Args:
-    - chunks (List[Chunk]): The list of chunks to tokenize.
+    - `chunks (List[Chunk])`: The list of chunks to tokenize.
 
     Returns:
     - List[TokenizedChunk]: The list of tokenized chunks.
@@ -47,7 +47,7 @@ async def tokenize(chunks: List[Chunk]) -> List[TokenizedChunk]:
     Usage:
     - POST /freq_retriever/tokenize/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
     return tokenizer.tokenize_documents(chunks)
@@ -66,12 +66,12 @@ async def create_model(
     Creates a BM25 model from a list of tokenized chunks.
 
     Args:
-    - project_name (str): The project name.
-    - model_name (str): The model name.
-    - chunks (List[TokenizedChunk]): The list of tokenized chunks.
-    - k1 (float): The k1 parameter for BM25.
-    - b (float): The b parameter for BM25.
-    - epsilon (float): The epsilon parameter for BM25.
+    - `project_name (str)`: The project name.
+    - `model_name (str)`: The model name.
+    - `chunks (List[TokenizedChunk])`: The list of tokenized chunks.
+    - `k1 (float)`: The k1 parameter for BM25.
+    - `b (float)`: The b parameter for BM25.
+    - `epsilon (float)`: The epsilon parameter for BM25.
 
     Returns:
     - None
@@ -79,7 +79,7 @@ async def create_model(
     Usage:
     - POST /freq_retriever/create/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
     retriever.create_model(
@@ -95,10 +95,10 @@ async def search(
     Searches for the top documents containing the same keywords as the query.
 
     Args:
-    - project_name (str): The project name.
-    - model_name (str): The model name.
-    - query (str): The query string.
-    - k (int): The number of documents to return.
+    - `project_name (str)`: The project name.
+    - `model_name (str)`: The model name.
+    - `query (str)`: The query string.
+    - `k (int)`: The number of documents to return.
 
     Returns:
     - List[Tuple[Chunk, float]]: The list of documents and their scores.
@@ -106,7 +106,7 @@ async def search(
     Usage:
     - POST /freq_retriever/search/
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/23/2024
     """
     chunks, bm25 = retriever.load_model(project_name, model_name)

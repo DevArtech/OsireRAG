@@ -12,7 +12,7 @@ Functions:
 Usage:
 - Import the VectorstoreManager class to manage vectorstores, add or retrieve chunks, and perform searches.
 
-Author: Adam Haile
+Author: Adam Haile  
 Date: 10/13/2024
 """
 
@@ -23,10 +23,10 @@ import pickle
 import numpy as np
 from pydantic import BaseModel
 from langchain_huggingface import HuggingFaceEmbeddings
-from typing import List, Dict, Optional, Tuple, Any, Union
+from typing import List, Dict, Optional, Tuple, Any, Union, ClassVar
 
-from core.models.chunker import Chunk
-from core.models.embedding import EmbeddedChunk, embedder
+from app.core.models.chunker import Chunk
+from app.core.models.embedding import EmbeddedChunk, embedder
 
 
 class VectorstoreSearchParameters(BaseModel):
@@ -41,7 +41,7 @@ class VectorstoreSearchParameters(BaseModel):
     Usage:
     - Instantiate this class to specify search parameters for vectorstore queries.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
 
@@ -63,7 +63,7 @@ class FAISS(BaseModel):
     Usage:
     - Use this class to represent a vectorstore and its associated data.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
 
@@ -97,13 +97,16 @@ class VectorstoreManager(BaseModel):
     Usage:
     - Instantiate this class to manage vectorstores and perform operations on them.
 
-    Author: Adam Haile
+    Author: Adam Haile  
     Date: 10/13/2024
     """
 
-    embedding_function: Any = embedder.hf
-    index: Any = faiss.IndexFlatL2(384)
+    embedding_function: ClassVar[HuggingFaceEmbeddings] = embedder.hf
+    index: ClassVar[faiss.IndexFlatL2] = faiss.IndexFlatL2(384)
     docstore: Dict[Any, Any] = {}
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def create_vectorstore(self) -> FAISS:
         """
@@ -115,7 +118,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - vectorstore = manager.create_vectorstore()
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         return FAISS(
@@ -132,16 +135,16 @@ class VectorstoreManager(BaseModel):
         Adds chunks with embeddings to the vectorstore.
 
         Args:
-        - vectorstore: Union[str, FAISS]: The vectorstore or its path.
-        - chunks: List[EmbeddedChunk]: The chunks to add.
+        - `vectorstore (Union[str, FAISS])`: The vectorstore or its path.
+        - `chunks (List[EmbeddedChunk])`: The chunks to add.
 
         Returns:
         - List[str]: A list of IDs for the added chunks.
 
         Usage:
-        - chunk_ids = manager.add_chunks(vectorstore, embedded_chunks)
+        - `chunk_ids = manager.add_chunks(vectorstore, embedded_chunks)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -176,16 +179,16 @@ class VectorstoreManager(BaseModel):
         Retrieves chunks from the vectorstore by their IDs.
 
         Args:
-        - vectorstore: Union[str, FAISS]: The vectorstore or its path.
-        - ids: List[str]: A list of chunk IDs.
+        - `vectorstore (Union[str, FAISS])`: The vectorstore or its path.
+        - `ids (List[str])`: A list of chunk IDs.
 
         Returns:
         - List[Chunk]: The retrieved chunks.
 
         Usage:
-        - chunks = manager.get_chunks(vectorstore, chunk_ids)
+        - `chunks = manager.get_chunks(vectorstore, chunk_ids)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -215,16 +218,16 @@ class VectorstoreManager(BaseModel):
         Deletes chunks from the vectorstore by their IDs.
 
         Args:
-        - vectorstore: Union[str, FAISS]: The vectorstore or its path.
-        - ids: List[str]: A list of chunk IDs.
+        - `vectorstore (Union[str, FAISS])`: The vectorstore or its path.
+        - `ids (List[str])`: A list of chunk IDs.
 
         Returns:
         - None
 
         Usage:
-        - manager.delete_chunks(vectorstore, chunk_ids)
+        - `manager.delete_chunks(vectorstore, chunk_ids)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -264,16 +267,16 @@ class VectorstoreManager(BaseModel):
         Searches the vectorstore using an embedded query.
 
         Args:
-        - vectorstore: Union[str, FAISS]: The vectorstore or its path.
-        - search_params: VectorstoreSearchParameters: The search parameters.
+        - `vectorstore (Union[str, FAISS])`: The vectorstore or its path.
+        - `search_params (VectorstoreSearchParameters)`: The search parameters.
 
         Returns:
         - List[Tuple[Chunk, float]]: A list of chunks and their distances.
 
         Usage:
-        - results = manager.search(vectorstore, search_params)
+        - `results = manager.search(vectorstore, search_params)`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -310,16 +313,16 @@ class VectorstoreManager(BaseModel):
         Saves the vectorstore to disk.
 
         Args:
-        - vectorstore: FAISS: The vectorstore to save.
-        - path: str: The directory path to save the vectorstore.
+        - `vectorstore (FAISS)`: The vectorstore to save.
+        - `path (str)`: The directory path to save the vectorstore.
 
         Returns:
         - None
 
         Usage:
-        - manager.save_vectorstore(vectorstore, "./path")
+        - `manager.save_vectorstore(vectorstore, "./path")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Create the directory if it doesn't exist
@@ -341,15 +344,15 @@ class VectorstoreManager(BaseModel):
         Loads a vectorstore from disk.
 
         Args:
-        - path: str: The directory path to load the vectorstore from.
+        - `path (str)`: The directory path to load the vectorstore from.
 
         Returns:
         - FAISS: The loaded vectorstore.
 
         Usage:
-        - vectorstore = manager.load_vectorstore("./path")
+        - `vectorstore = manager.load_vectorstore("./path")`
 
-        Author: Adam Haile
+        Author: Adam Haile  
         Date: 10/13/2024
         """
         # Load the index and docstore from disk

@@ -5,11 +5,11 @@ RUN apt-get update && apt-get install -y \
     && pip install --upgrade pip pipenv \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --no-cache-dir --ignore-installed pipenv
-
 WORKDIR /var/task
 
 COPY Pipfile Pipfile.lock /var/task/
+
+COPY icon.png /var/task/
 
 COPY app /var/task/app
 
@@ -20,4 +20,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 RUN python -m spacy download en_core_web_sm
 RUN python -m nltk.downloader -d /usr/share/nltk_data punkt_tab stopwords wordnet
 
-CMD ["uvicorn", "--app-dir", "app", "main:app", "--port", "8080"]
+ENV PYTHONPATH=/var/task
+ENV TOKENIZER_PATH=/var/task/app/models/tokenizer.pkl
+
+CMD ["uvicorn", "app.main:app", "--port", "8080"]
