@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     Usage:
     - settings = get_settings().APP_NAME
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 9/27/2024
     """
 
@@ -68,7 +68,7 @@ def get_settings() -> Settings:
     Usage:
     - get_settings()
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 9/27/2024
     """
     return Settings()

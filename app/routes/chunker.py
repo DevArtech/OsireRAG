@@ -56,7 +56,7 @@ async def chunk_file(
     Usage:
     - POST /chunker/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 

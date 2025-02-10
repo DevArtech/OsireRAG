@@ -27,7 +27,7 @@ from app.routes import (
     rrf,
     reranker,
     knowledge_base,
-    llm,
+    # llm,
 )
 
 api_router = APIRouter()
@@ -41,4 +41,4 @@ api_router.include_router(vectorstore.router)
 api_router.include_router(rrf.router)
 api_router.include_router(reranker.router)
 api_router.include_router(knowledge_base.router)
-api_router.include_router(llm.router)
+# api_router.include_router(llm.router)

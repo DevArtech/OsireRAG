@@ -43,7 +43,7 @@ class LLM(BaseModel):
     Usage:
     - Create an instance of this class to interact with the LLM model.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -56,7 +56,7 @@ class LLM(BaseModel):
     def __init__(self):
         super().__init__()
         # Load the Llama 3.1 70b tokenizer
-        with open(get_settings().TOKENIZER_PATH, 'rb') as file:
+        with open(get_settings().TOKENIZER_PATH, "rb") as file:
             LLM.tokenizer = pickle.load(file)
 
         # Initialize the LLM model depending on the environment
@@ -79,7 +79,9 @@ class LLM(BaseModel):
             LLM.llm = OpenAI(base_url=get_settings().ROSIE_LLM, api_key="not_used")
             logger.info("Connected to Rosie Meta LLaMa Model")
 
-    def _tokenize(self, messages: List[Dict[str, str]], l: int = 100000) -> Tuple[List[Dict[str, str]], int]:
+    def _tokenize(
+        self, messages: List[Dict[str, str]], l: int = 100000
+    ) -> Tuple[List[Dict[str, str]], int]:
         """
         Validates a message is within token length and fixes it if not.
 
@@ -94,7 +96,9 @@ class LLM(BaseModel):
         """
         messages_c = copy.deepcopy(messages)
         logger.info(f"Original messages: {messages_c}")
-        tokenized = len(self.tokenizer(json.dumps(messages_c), add_special_tokens=True)["input_ids"])
+        tokenized = len(
+            self.tokenizer(json.dumps(messages_c), add_special_tokens=True)["input_ids"]
+        )
         logger.info(f"Message length: {tokenized}")
         while tokenized > l:
             # Remove messages in accordance to if they are the system message or not
@@ -105,11 +109,18 @@ class LLM(BaseModel):
             if popped_message.get("role") == "user":
                 messages_c.pop(pop)
 
-            tokenized = len(self.tokenizer(json.dumps(messages_c), add_special_tokens=True)["input_ids"])
+            tokenized = len(
+                self.tokenizer(json.dumps(messages_c), add_special_tokens=True)[
+                    "input_ids"
+                ]
+            )
 
         logger.info(f"Final message length: {tokenized}")
         logger.info(f"Final messages: {messages_c}")
-        return messages_c, tokenized # Return the corrected message and the token length
+        return (
+            messages_c,
+            tokenized,
+        )  # Return the corrected message and the token length
 
     def prompt(self, prompt: str, max_length: int = 128000) -> str:
         """
@@ -125,7 +136,7 @@ class LLM(BaseModel):
         Usage:
         - `llm.prompt(prompt, max_length = 128000)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/30/2024
         """
 
@@ -179,7 +190,7 @@ class LLM(BaseModel):
               print(token)
         ```
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/30/2024
         """
 
@@ -217,8 +228,8 @@ class LLM(BaseModel):
             full_messages = []
             if history:
                 full_messages = history
-            
-            full_messages.pop() # Remove the pre-inserted user message from the history
+
+            full_messages.pop()  # Remove the pre-inserted user message from the history
             full_messages.append({"role": "user", "content": prompt})
 
             full_messages, tokens_used = self._tokenize(full_messages)

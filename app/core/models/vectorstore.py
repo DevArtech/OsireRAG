@@ -41,7 +41,7 @@ class VectorstoreSearchParameters(BaseModel):
     Usage:
     - Instantiate this class to specify search parameters for vectorstore queries.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
 
@@ -63,7 +63,7 @@ class FAISS(BaseModel):
     Usage:
     - Use this class to represent a vectorstore and its associated data.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
 
@@ -97,7 +97,7 @@ class VectorstoreManager(BaseModel):
     Usage:
     - Instantiate this class to manage vectorstores and perform operations on them.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
 
@@ -118,7 +118,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - vectorstore = manager.create_vectorstore()
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         return FAISS(
@@ -144,7 +144,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `chunk_ids = manager.add_chunks(vectorstore, embedded_chunks)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -188,7 +188,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `chunks = manager.get_chunks(vectorstore, chunk_ids)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -227,7 +227,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `manager.delete_chunks(vectorstore, chunk_ids)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -276,7 +276,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `results = manager.search(vectorstore, search_params)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Load the vectorstore if it's a path
@@ -322,7 +322,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `manager.save_vectorstore(vectorstore, "./path")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Create the directory if it doesn't exist
@@ -352,7 +352,7 @@ class VectorstoreManager(BaseModel):
         Usage:
         - `vectorstore = manager.load_vectorstore("./path")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/13/2024
         """
         # Load the index and docstore from disk

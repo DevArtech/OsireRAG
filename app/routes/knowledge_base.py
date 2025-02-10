@@ -59,7 +59,7 @@ async def create_kb(
     Usage:
     - GET /knowledge-base/create-kb/?project_name=example_project&vectorstore_name=example_vectorstore&model_name=example_model
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
     try:
@@ -99,7 +99,7 @@ async def add_documents(
     Usage:
     - POST /knowledge-base/add-documents/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
     try:
@@ -148,7 +148,7 @@ async def add_webpages(
     Usage:
     - POST /knowledge-base/add-webpages/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
     try:
@@ -189,7 +189,7 @@ async def add_project(
     Usage:
     - POST /knowledge-base/add-project/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
     try:
@@ -229,7 +229,7 @@ async def search(
     Usage:
     - POST /knowledge-base/search/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
     try:

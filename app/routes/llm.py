@@ -49,7 +49,7 @@ class Prompt:
     Methods:
     - None
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -71,7 +71,7 @@ class RAGPrompt(BaseModel):
     Methods:
     - None
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -95,13 +95,15 @@ class RAGPrompt(BaseModel):
         Usage:
         - `rag_prompt = RAGPrompt(project_name="project", vectorstore_name="vs", model_name="model", params=params)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 12/2/2024
         """
         super().__init__(**data)
-        
+
         # Create a deep copy of the conversation history
-        self.conversation_history = [{k: v for k, v in item.items()} for item in self.conversation_history]
+        self.conversation_history = [
+            {k: v for k, v in item.items()} for item in self.conversation_history
+        ]
 
 
 router = APIRouter(prefix="/llm", tags=["llm"])
@@ -122,7 +124,7 @@ def craft_rag_prompt(prompt: RAGPrompt) -> Tuple[str, List[Tuple[Chunk, float]]]
     Usage:
     - `craft_rag_prompt(prompt)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -184,7 +186,7 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
     Usage:
     - `rag_prompt(prompt)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -224,7 +226,7 @@ async def prompt(prompt: Prompt) -> StreamingResponse:
     Usage:
     - POST /llm/prompt/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 
@@ -274,7 +276,7 @@ async def rag(prompt: RAGPrompt) -> StreamingResponse:
     Usage:
     - POST /llm/rag/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/30/2024
     """
 

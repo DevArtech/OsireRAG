@@ -35,7 +35,7 @@ class Reranker(BaseModel):
     Usage:
     - Instantiate this class and call cross_encode_rerank to rerank documents based on their relevance to a query.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/3/2024
     """
 
@@ -70,7 +70,7 @@ class Reranker(BaseModel):
         reranked_docs = reranker.cross_encode_rerank(query="example query", documents=chunks)
         ```
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 11/3/2024
         """
 

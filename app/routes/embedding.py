@@ -51,7 +51,7 @@ async def embed_query(query: str) -> JSONResponse:
     Usage:
     - POST /embedding/query/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
     return JSONResponse(
@@ -78,7 +78,7 @@ async def embed_chunks(chunks: List[Chunk]) -> StreamingResponse:
     Usage:
     - POST /embedding/chunks/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 

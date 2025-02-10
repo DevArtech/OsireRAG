@@ -4,7 +4,10 @@ from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResp
 from api.api import api_router
 from app.core.logger import logger
 from app.core.settings import get_settings
-from app.core.middleware.token_validator import TokenValidationMiddleware, validate_token
+from app.core.middleware.token_validator import (
+    TokenValidationMiddleware,
+    validate_token,
+)
 
 app = FastAPI(
     title=get_settings().APP_NAME,

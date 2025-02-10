@@ -57,7 +57,7 @@ class Chunk(BaseModel):
     Usage:
     - Create an instance of this class to represent a chunk of text.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 
@@ -80,12 +80,14 @@ class DocumentChunker(BaseModel):
     Methods:
     - chunk_document: Chunks a document into smaller pieces.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 
     nlp: ClassVar[Language] = spacy.load("en_core_web_sm")
-    splitter: ClassVar[HTMLHeaderTextSplitter] = HTMLHeaderTextSplitter(headers_to_split_on)
+    splitter: ClassVar[HTMLHeaderTextSplitter] = HTMLHeaderTextSplitter(
+        headers_to_split_on
+    )
 
     # Config class to allow Language and HTMLHeaderTextSplitter to be
     # passed as type hints without errors from Pydantic
@@ -106,7 +108,7 @@ class DocumentChunker(BaseModel):
         Usage:
         - `chunks = chunk_document(document, n=7)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/9/2024
         """
 

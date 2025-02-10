@@ -57,7 +57,7 @@ def update_project(project: str) -> Tuple[str, gr.update, gr.update, str, str]:
     Usage:
     - `update_project(project)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/25/2024
     """
 
@@ -126,14 +126,20 @@ def rag_query(
     Usage:
     - `rag_query(user_query, project, vs, model)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/25/2024
     """
     # Add the user's query to the conversation history
     conversation_history.append({"role": "user", "content": user_query})
 
     # Query the RosieRAG model
-    response = query(project=project, vs=vs, model=model, query=user_query, history=conversation_history)
+    response = query(
+        project=project,
+        vs=vs,
+        model=model,
+        query=user_query,
+        history=conversation_history,
+    )
 
     # Process the response
     assistant_response = ""
@@ -209,7 +215,7 @@ def create_knowledge_base(
     Usage:
     - `create_knowledge_base(project, vs, model)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/25/2024
     """
     # Create the knowledge base
@@ -279,7 +285,7 @@ def refresh_all() -> (
     Usage:
     - `refresh_all()`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/25/2024
     """
     # Get the projects, vectorstores, and models
@@ -486,6 +492,41 @@ with gr.Blocks() as projects:
         outputs=selected_vs,
     )
 
+with gr.Blocks() as params:
+    sentences = gr.State(value=7)
+    chunk_len = gr.State(value=10000)
+    chunk_overlap = gr.State(value=50)
+    k1 = gr.State(value=1.5)
+    b = gr.State(value=0.75)
+    epsilon = gr.State(value=0.25)
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown(
+                "## Parameters\nThese are additional parameters you can modify for your RosieRAG model."
+            )
+            gr.Markdown("### Ingestion Parameters")
+            with gr.Row():
+                sentences_in = gr.Number(value=7, label="Number of Sentences per Chunk")
+                chunk_len_in = gr.Number(value=10000, label="Chunk Length")
+                chunk_overlap_in = gr.Number(value=50, label="Chunk Overlap")
+            with gr.Row():
+                k1_in = gr.Number(
+                    value=1.5, label="k1 - Term Frequency Saturation", step=0.01
+                )
+                b_in = gr.Number(
+                    value=0.75, label="b - Length Normalization", step=0.01
+                )
+                epsilon_in = gr.Number(
+                    value=0.25, label="epsilon - Smoothing Parameter for IDF", step=0.01
+                )
+            gr.Markdown("### Querying Parameters")
+
+    sentences_in.change(lambda s: s, inputs=sentences_in, outputs=sentences)
+    chunk_len_in.change(lambda c: c, inputs=chunk_len_in, outputs=chunk_len)
+    chunk_overlap_in.change(lambda o: o, inputs=chunk_overlap_in, outputs=chunk_overlap)
+    k1_in.change(lambda k: k, inputs=k1_in, outputs=k1)
+    b_in.change(lambda b: b, inputs=b_in, outputs=b)
+    epsilon_in.change(lambda e: e, inputs=epsilon_in, outputs=epsilon)
 
 with gr.Blocks() as home:
     # Create the home interface w/ document ingestion, webpage ingestion, chat interface, and retrieved chunks
@@ -542,19 +583,41 @@ with gr.Blocks() as home:
         # Add the documents to the knowledge base
         file.change(
             fn=add_documents,
-            inputs=[selected_project, selected_vs, selected_model, file],
-            outputs=[chatbot, textbox],
+            inputs=[
+                selected_project,
+                selected_vs,
+                selected_model,
+                file,
+                sentences,
+                chunk_len,
+                chunk_overlap,
+                k1,
+                b,
+                epsilon,
+            ],
+            outputs=[chatbot, textbox, file, pages, upload_pages],
         )
 
         # Add the webpages to the knowledge base
         upload_pages.click(
             fn=add_webpages,
-            inputs=[selected_project, selected_vs, selected_model, pages],
-            outputs=[chatbot, textbox],
+            inputs=[
+                selected_project,
+                selected_vs,
+                selected_model,
+                pages,
+                sentences,
+                chunk_len,
+                chunk_overlap,
+                k1,
+                b,
+                epsilon,
+            ],
+            outputs=[chatbot, textbox, file, pages, upload_pages],
         )
 
 # Create the Gradio interface and connect the home and projects interfaces
 with gr.Blocks(title="RosieRAG", css=css) as io:
-    gr.TabbedInterface([home, projects], ["Home", "Projects"])
+    gr.TabbedInterface([home, projects, params], ["Home", "Projects", "Parameters"])
 
 io.queue()

@@ -58,7 +58,7 @@ async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONRe
     Usage:
     - POST /vectorstore/{project_name}/create/{vectorstore_name}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
 
@@ -107,7 +107,7 @@ async def add_chunks(
     Usage:
     - POST /vectorstore/{project_name}/add/{vectorstore_name}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
     # Validate the project exists
@@ -154,7 +154,7 @@ async def get_chunks(
     Usage:
     - POST /vectorstore/{project_name}/get/{vectorstore_name}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
     # Validate the project exists
@@ -231,7 +231,7 @@ async def search(
     Usage:
     - POST /vectorstore/{project_name}/search/{vectorstore_name}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/13/2024
     """
     # Validate the project exists

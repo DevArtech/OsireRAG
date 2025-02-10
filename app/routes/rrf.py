@@ -46,7 +46,7 @@ async def rrf_ranks(
     Usage:
     - POST /rrf/ranks/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/24/2024
     """
     return rrf.ranks(ranks, k, n)

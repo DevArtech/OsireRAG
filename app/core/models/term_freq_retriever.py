@@ -40,7 +40,7 @@ class TokenizedChunk(Chunk):
     Usage:
     - Use this class to represent a text chunk after tokenization.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
 
@@ -62,7 +62,7 @@ class ChunkTokenizer(BaseModel):
     Usage:
     - Instantiate this class to tokenize queries and document chunks for BM25.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
 
@@ -82,7 +82,7 @@ class ChunkTokenizer(BaseModel):
         Usage:
         - tokenizer = ChunkTokenizer()
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/23/2024
         """
         super().__init__()
@@ -101,7 +101,7 @@ class ChunkTokenizer(BaseModel):
         Usage:
         - `tokens = tokenizer.tokenize_query("example query")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/23/2024
         """
         # Tokenize and lemmatize the query
@@ -126,7 +126,7 @@ class ChunkTokenizer(BaseModel):
         Usage:
         - `tokenized_chunks = tokenizer.tokenize_documents(chunks)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/23/2024
         """
         # Tokenize and lemmatize the content of each chunk
@@ -155,7 +155,7 @@ class BM25Model(BaseModel):
     Usage:
     - Instantiate this class to create, load, and search BM25 indices.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
 
@@ -214,7 +214,7 @@ class BM25Model(BaseModel):
         Usage:
         - `tokenized_docs, bm25 = bm25.load_model("project", "model")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/23/2024
         """
         # Load the tokenized documents and BM25 model from disk
@@ -252,7 +252,7 @@ class BM25Model(BaseModel):
         Usage:
         - `results = bm25.search(tokenized_query, bm25_model, tokenized_chunks, k=10)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/23/2024
         """
         # Perform the BM25 search

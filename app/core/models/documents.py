@@ -38,7 +38,7 @@ class Document(BaseModel):
     Usage:
     - document = Document(directory="/path/to/file.txt")
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
 
@@ -62,7 +62,7 @@ class Document(BaseModel):
         Usage:
         - `document = Document(directory="/path/to/file.txt")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
         super().__init__(**data)

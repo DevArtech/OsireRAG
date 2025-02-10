@@ -45,7 +45,7 @@ async def cross_encoder_rerank(
     Usage:
     - POST /reranker/cross-encoder/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/3/2024
     """
     scored_documents = reranker.cross_encode_rerank(query, documents)

@@ -48,7 +48,7 @@ async def upload_web(project_name: str, web_pages: List[str]) -> JSONResponse:
     Usage:
     - POST /web/{project_name}/upload/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
     web.add_pages(project_name, web_pages)

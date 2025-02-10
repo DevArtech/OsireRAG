@@ -26,7 +26,8 @@ from fastapi import UploadFile
 from typing import List, Tuple, Iterator, Dict, Optional
 
 from app.core.models.knowledge_base import KnowledgeBase, DocumentArgs
-from app.routes.llm import rag_prompt, RAGPrompt, SearchParameters
+
+# from app.routes.llm import rag_prompt, RAGPrompt, SearchParameters
 
 kb = KnowledgeBase()
 
@@ -49,7 +50,7 @@ def new_knowledge_base(project: str, vs: str, model: str) -> None:
     Usage:
     - `new_knowledge_base(project, vs, model)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/20/2024
     """
     try:
@@ -59,7 +60,18 @@ def new_knowledge_base(project: str, vs: str, model: str) -> None:
         raise exceptions.Error(str(e))
 
 
-def add_webpages(project: str, vs: str, model: str, urls: str) -> Tuple[None, None]:
+def add_webpages(
+    project: str,
+    vs: str,
+    model: str,
+    urls: str,
+    n: int = 7,
+    char_len: int = 10000,
+    overlap: int = 50,
+    k1: float = 1.5,
+    b: float = 0.75,
+    epsilon: float = 0.25,
+) -> Tuple[None, None]:
     """
     Adds webpages to the knowledge base.
 
@@ -78,7 +90,7 @@ def add_webpages(project: str, vs: str, model: str, urls: str) -> Tuple[None, No
     Usage:
     - `add_webpages(project, vs, model, urls)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/20/2024
     """
     if urls:
@@ -88,17 +100,39 @@ def add_webpages(project: str, vs: str, model: str, urls: str) -> Tuple[None, No
         gr.Info(f"Adding {len(urls)} webpage(s)...")
 
         try:
-            kb.add_webpages(project, vs, model, urls)
+            kb.add_webpages(
+                DocumentArgs(
+                    project_name=project,
+                    vectorstore_name=vs,
+                    model_name=model,
+                    n=n,
+                    chunk_len=char_len,
+                    chunk_overlap=overlap,
+                    k1=k1,
+                    b=b,
+                    epsilon=epsilon,
+                ),
+                urls,
+            )
             gr.Info(f"{len(urls)} Webpage(s) added successfully.")
-            return None, None
+            return None, None, None, None, None
         except ValueError as e:
             raise exceptions.Error(str(e))
 
-    return None, None
+    return None, None, None, None, None
 
 
 def add_documents(
-    project: str, vs: str, model: str, documents: List[str]
+    project: str,
+    vs: str,
+    model: str,
+    documents: List[str],
+    n: int = 7,
+    char_len: int = 10000,
+    overlap: int = 50,
+    k1: float = 1.5,
+    b: float = 0.75,
+    epsilon: float = 0.25,
 ) -> Tuple[None, None]:
     """
     Adds documents to the knowledge base.
@@ -118,7 +152,7 @@ def add_documents(
     Usage:
     - `add_documents(project, vs, model, documents)`
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/20/2024
     """
     if documents:
@@ -136,19 +170,33 @@ def add_documents(
         try:
             kb.add_documents(
                 DocumentArgs(
-                    project_name=project, vectorstore_name=vs, model_name=model
+                    project_name=project,
+                    vectorstore_name=vs,
+                    model_name=model,
+                    n=n,
+                    chunk_len=char_len,
+                    chunk_overlap=overlap,
+                    k1=k1,
+                    b=b,
+                    epsilon=epsilon,
                 ),
                 files,
             )
             gr.Info(f"{len(files)} Files(s) added successfully.")
-            return None, None
+            return None, None, None, None, None
         except ValueError as e:
             raise exceptions.Error(str(e))
 
-    return None, None
+    return None, None, None, None, None
 
 
-def query(project: str, vs: str, model: str, query: str, history: Optional[List[Dict[str, str]]] = None) -> Iterator[str]:
+def query(
+    project: str,
+    vs: str,
+    model: str,
+    query: str,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> Iterator[str]:
     """
     Queries the knowledge base for an LLM response.
 
@@ -167,19 +215,20 @@ def query(project: str, vs: str, model: str, query: str, history: Optional[List[
         print(response)
     ```
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/20/2024
     """
-    prompt = RAGPrompt(
-        project_name=project,
-        vectorstore_name=vs,
-        model_name=model,
-        params=SearchParameters(query=query, n_results=10, filter={}, rerank=True),
-        stream=True,
-        conversation_history=history,
-    )
+    yield "hi!"
+    # prompt = RAGPrompt(
+    #     project_name=project,
+    #     vectorstore_name=vs,
+    #     model_name=model,
+    #     params=SearchParameters(query=query, n_results=10, filter={}, rerank=True),
+    #     stream=True,
+    #     conversation_history=history,
+    # )
 
-    # Yield each chunk as it's recieved from the RAGPrompt generator
-    for chunk in rag_prompt(prompt):
-        if chunk:
-            yield chunk
+    # # Yield each chunk as it's recieved from the RAGPrompt generator
+    # for chunk in rag_prompt(prompt):
+    #     if chunk:
+    #         yield chunk

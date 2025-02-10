@@ -37,7 +37,7 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
     Usage:
     - Add the TokenValidationMiddleware to the FastAPI app middleware stack.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
 

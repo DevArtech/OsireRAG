@@ -30,7 +30,7 @@ class ReciprocalRankFusion(BaseModel):
     Usage:
     - Instantiate this class and call the ranks method to merge and rerank document lists.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/24/2024
     """
 
@@ -57,7 +57,7 @@ class ReciprocalRankFusion(BaseModel):
         combined_ranks = rrf.ranks(ranks=[ranker1_results, ranker2_results], k=60, n=10)
         ```
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/24/2024
         """
 

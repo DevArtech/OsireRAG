@@ -55,7 +55,7 @@ async def create_project(project_name: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/create/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
     project_path = f"./.rosierag/{project_name}"
@@ -97,7 +97,7 @@ async def list_documents(project_name: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/list/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
     documents = []
@@ -142,7 +142,7 @@ async def upload_documents(project_name: str, file: UploadFile) -> JSONResponse:
     Usage:
     - POST /documents/{project_name}/upload/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
 
@@ -192,7 +192,7 @@ async def retrieve_document(project_name: str, file: str) -> JSONResponse:
     Usage:
     - GET /documents/{project_name}/retrieve/{file}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
 
@@ -249,7 +249,7 @@ async def delete_documents(project_name: str, file: str) -> Response:
     Usage:
     - DELETE /documents/{project_name}/delete/{file}/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/7/2024
     """
     # Validate the project exists

@@ -39,7 +39,7 @@ class EmbeddedChunk(Chunk):
     Usage:
     - Create an instance of this class to represent a chunk of text with an embedding.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 
@@ -60,7 +60,7 @@ class DocumentEmbedder(BaseModel):
     Usage:
     - Use the pre-initialized embedder object to embed chunks and queries.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/9/2024
     """
 
@@ -83,7 +83,7 @@ class DocumentEmbedder(BaseModel):
         Usage:
         - Use the pre-initialized embedder object to embed chunks and queries.
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/9/2024
         """
         super().__init__()
@@ -113,7 +113,7 @@ class DocumentEmbedder(BaseModel):
         Usage:
         - `embedded_chunks = embedder.embed_chunks(chunks)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/9/2024
         """
         embedded_docs = self.hf.embed_documents([chunk.content for chunk in chunks])
@@ -135,7 +135,7 @@ class DocumentEmbedder(BaseModel):
         Usage:
         - `embedded_query = embedder.embed_query(query)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/9/2024
         """
         return self.hf.embed_query(query)

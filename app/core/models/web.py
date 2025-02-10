@@ -35,7 +35,7 @@ class WebScraper(BaseModel):
     - scraper = WebScraper()
     - page_files = scraper.add_pages(project_name="example_project", web_pages=["https://example.com"])
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 11/19/2024
     """
 
@@ -56,7 +56,7 @@ class WebScraper(BaseModel):
         Usage:
         - `page_files = scraper.add_pages(project_name="example_project", web_pages=["https://example.com"])`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/7/2024
         """
         # Define the project directory path

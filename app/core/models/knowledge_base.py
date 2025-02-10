@@ -53,7 +53,7 @@ class SearchParameters:
     Usage:
     - Create an instance of this class to represent search parameters.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
 
@@ -80,7 +80,7 @@ class DocumentArgs:
     Usage:
     - Create an instance of this class to represent document arguments.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
 
@@ -88,6 +88,11 @@ class DocumentArgs:
     vectorstore_name: str
     model_name: str
     n: int = 7
+    chunk_len: int = 10000
+    chunk_overlap: int = 50
+    k1: float = 1.5
+    b: float = 0.75
+    epsilon: float = 0.25
 
 
 class KnowledgeBase(BaseModel):
@@ -115,7 +120,7 @@ class KnowledgeBase(BaseModel):
     Usage:
     - Create an instance of this class to represent the RosieRAG knowledge base.
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/16/2024
     """
 
@@ -150,7 +155,7 @@ class KnowledgeBase(BaseModel):
         - Use this method to validate a project exists before performing operations on it.
         - `project_path, vs_path, model_path = self._validate_project("project", "vectorstore", "model")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
 
@@ -207,7 +212,7 @@ class KnowledgeBase(BaseModel):
         Usage:
         - `kbase.create_kb("project", "vectorstore", "model")`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
         _, vs_path, _ = self._validate_project(
@@ -242,7 +247,7 @@ class KnowledgeBase(BaseModel):
         Usage:
         - `kbase.add_documents(args, documents)`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
         # Track the time it takes to add the documents
@@ -288,8 +293,15 @@ class KnowledgeBase(BaseModel):
             document_obj = Document(directory=os.path.abspath(file_path))
 
             # Chunk, embed, and tokenize the document
-            logger.info("Chunking document.")
-            document_chunks = self.chunker.chunk_document(document_obj, n=args.n)
+            logger.info(
+                f'Chunking document into chunks of sentence size: "{args.n}", len: "{args.chunk_len}", overlap: "{args.chunk_overlap}".'
+            )
+            document_chunks = self.chunker.chunk_document(
+                document_obj,
+                n=args.n,
+                max_length=args.chunk_len,
+                overlap=args.chunk_overlap,
+            )
 
             logger.info("Embedding document.")
             document_embeddings = self.embedder.embed_chunks(document_chunks)
@@ -308,7 +320,7 @@ class KnowledgeBase(BaseModel):
         # Save the vectorstore and create the new/updated BM25 model
         logger.info("Saving databases and models.")
         self.vs_manager.save_vectorstore(vectorstore, vs_path)
-        self.bm25.create_model(args.project_name, args.model_name, tokenized_docs)
+        self.bm25.create_model(args.project_name, args.model_name, tokenized_docs, k1=args.k1, b=args.b, epsilon=args.epsilon)
 
         # Log the time it took to add the documents
         logger.info(f"Documents added in {time.time() - start_time} seconds.")
@@ -317,9 +329,7 @@ class KnowledgeBase(BaseModel):
 
     def add_webpages(
         self,
-        project_name: str,
-        vectorstore_name: str,
-        model_name: str,
+        args: DocumentArgs,
         webpages: List[str],
     ) -> List[str]:
         """
@@ -339,21 +349,19 @@ class KnowledgeBase(BaseModel):
         Usage:
         - `kbase.add_webpages("project", "vectorstore", "model", ["https://www.somewebsite.com", "https://www.somewebsite2.com"])`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
         # Validate the project
-        self._validate_project(project_name, vectorstore_name, model_name)
+        self._validate_project(
+            args.project_name, args.vectorstore_name, args.model_name
+        )
 
         # Scrape the webpages and run add_documents on the returned HTML files
         logger.info("Downloading webpages to project directory.")
-        page_files = self.scraper.add_pages(project_name, webpages)
+        page_files = self.scraper.add_pages(args.project_name, webpages)
         return self.add_documents(
-            DocumentArgs(
-                project_name=project_name,
-                vectorstore_name=vectorstore_name,
-                model_name=model_name,
-            ),
+            args,
             page_files,
             upload=False,
         )
@@ -408,7 +416,7 @@ class KnowledgeBase(BaseModel):
         Usage:
         - `kbase.search("project", "vectorstore", "model", SearchParameters(query="query", n_results=10, filter={}, rerank=True))`
 
-        Author: Adam Haile  
+        Author: Adam Haile
         Date: 10/16/2024
         """
 

@@ -26,7 +26,11 @@ from fastapi import APIRouter
 from typing import List, Tuple
 
 from app.core.models.chunker import Chunk
-from app.core.models.term_freq_retriever import BM25Model, ChunkTokenizer, TokenizedChunk
+from app.core.models.term_freq_retriever import (
+    BM25Model,
+    ChunkTokenizer,
+    TokenizedChunk,
+)
 
 router = APIRouter(prefix="/freq_retriever", tags=["freq_retriever"])
 retriever = BM25Model()
@@ -47,7 +51,7 @@ async def tokenize(chunks: List[Chunk]) -> List[TokenizedChunk]:
     Usage:
     - POST /freq_retriever/tokenize/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
     return tokenizer.tokenize_documents(chunks)
@@ -79,7 +83,7 @@ async def create_model(
     Usage:
     - POST /freq_retriever/create/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
     retriever.create_model(
@@ -106,7 +110,7 @@ async def search(
     Usage:
     - POST /freq_retriever/search/
 
-    Author: Adam Haile  
+    Author: Adam Haile
     Date: 10/23/2024
     """
     chunks, bm25 = retriever.load_model(project_name, model_name)
