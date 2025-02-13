@@ -7,10 +7,7 @@ from app.core.settings import get_settings
 
 
 def validate_token(token: str) -> bool:
-    salt = get_settings().SALT
-    api_token = get_settings().API_TOKEN
-
-    return hashlib.sha256((salt + token).encode()).hexdigest() == api_token
+    return token == get_settings().API_TOKEN
 
 
 class TokenValidationMiddleware(BaseHTTPMiddleware):

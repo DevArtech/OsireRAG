@@ -69,11 +69,15 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
                 )
 
         response = await call_next(request)
+        response.set_cookie(
+            key="apitoken",
+            value=token,
+            max_age=86400,
+            secure=True,
+            path=get_settings().BASE_URL + "/",
+        )
         return response
 
     
 def validate_token(token: str) -> bool:
-    salt = get_settings().SALT
-    api_token = get_settings().API_TOKEN
-
-    return hashlib.sha256((salt + token).encode()).hexdigest() == api_token
+    return token == get_settings().API_TOKEN

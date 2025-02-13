@@ -17,7 +17,7 @@ mkdir -p image
 MAIL_USER="student@msoe.edu"
 DOCKER_IMAGE="nvidia/cuda:12.5.0-devel-ubuntu22.04"
 IMAGE_PATH="./image/container.sif"
-PASSWORD_FILE="./password.txt"
+TOKEN_FILE="./token.txt"
 FORCE_REBUILD=false
 
 ## Parse optional command-line arguments
@@ -58,16 +58,16 @@ find_port() {
     return 1
 }
 
-generate_password() {
-    if [[ -f "$PASSWORD_FILE" && -s "$PASSWORD_FILE" ]]; then
-        echo "Using existing password from $PASSWORD_FILE"
-        PASSWORD=$(cat "$PASSWORD_FILE")
+generate_token() {
+    if [[ -f "$TOKEN_FILE" && -s "$TOKEN_FILE" ]]; then
+        echo "Using existing token from $TOKEN_FILE"
+        export API_TOKEN=$(cat "$TOKEN_FILE")
     else
-        echo "Generating a new random password..."
-        PASSWORD=$(openssl rand -base64 16)
-        echo "$PASSWORD" > "$PASSWORD_FILE"
-        chmod 600 "$PASSWORD_FILE"
-        echo "Password saved to $PASSWORD_FILE with restricted permissions."
+        echo "Generating a new random token..."
+        export API_TOKEN=$(openssl rand -base64 16)
+        echo "$API_TOKEN" > "$TOKEN_FILE"
+        chmod 600 "$TOKEN_FILE"
+        echo "Token saved to $TOKEN_FILE with restricted permissions."
     fi
 }
 
@@ -115,6 +115,8 @@ MODIFIED_URL=$(echo "$BASE_URL" | sed -e 's#^/node/##' -e 's#/[^/]*$##')
 
 echo "BASE_URL: $BASE_URL"
 echo "MODIFIED_URL: $MODIFIED_URL"
+
+generate_token
 
 # Run the Singularity container with the specified command
 echo "Running Singularity container..."

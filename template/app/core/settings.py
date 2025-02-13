@@ -9,7 +9,6 @@ abs_path_env = os.path.abspath("../../.env")
 
 class Settings(BaseSettings):
     API_TOKEN: str
-    SALT: str
 
     # Feel free to modify these for your platform
     APP_NAME: str = "Rosie FastAPI Template"
