@@ -10,7 +10,7 @@ Functions:
 - new_knowledge_base(project: str, vs: str, model: str) -> dict: Creates a new knowledge base.
 - add_webpages(project: str, vs: str, model: str, urls: str) -> None: Adds webpages to the knowledge base.
 - add_documents(project: str, vs: str, model: str, documents: List[str]) -> None: Adds documents to the knowledge base.
-- query(project: str, vs: str, model: str, query: str) -> Iterator[str]: Queries the knowledge base for an LLM response.
+- query(project: str, vs: str, model: str, query: str, history: Optional[List[Dict[str, str]]] = None, n_results: int = 10, rerank: bool = True) -> Iterator[str]: Queries the knowledge base for an LLM response.
 
 Usage:
 - Import the functions from this module into your Gradio application.
@@ -27,7 +27,7 @@ from typing import List, Tuple, Iterator, Dict, Optional
 
 from app.core.models.knowledge_base import KnowledgeBase, DocumentArgs
 
-# from app.routes.llm import rag_prompt, RAGPrompt, SearchParameters
+from app.routes.llm import rag_prompt, RAGPrompt, SearchParameters
 
 kb = KnowledgeBase()
 
@@ -196,6 +196,8 @@ def query(
     model: str,
     query: str,
     history: Optional[List[Dict[str, str]]] = None,
+    n_results: int = 10,
+    rerank: bool = True,
 ) -> Iterator[str]:
     """
     Queries the knowledge base for an LLM response.
@@ -205,6 +207,9 @@ def query(
     - `vs (str)`: The name of the vector store.
     - `model (str)`: The name of the model.
     - `query (str)`: The query to search for.
+    - `history (Optional[List[Dict[str, str]]])`: The conversation history.
+    - `n_results (int)`: Number of results to return from search.
+    - `rerank (bool)`: Whether to rerank the search results.
 
     Returns:
     - Iterator[str]: A generator that yields the LLM response.
@@ -218,17 +223,21 @@ def query(
     Author: Adam Haile
     Date: 10/20/2024
     """
-    yield "hi!"
-    # prompt = RAGPrompt(
-    #     project_name=project,
-    #     vectorstore_name=vs,
-    #     model_name=model,
-    #     params=SearchParameters(query=query, n_results=10, filter={}, rerank=True),
-    #     stream=True,
-    #     conversation_history=history,
-    # )
+    prompt = RAGPrompt(
+        project_name=project,
+        vectorstore_name=vs,
+        model_name=model,
+        params=SearchParameters(
+            query=query,
+            n_results=n_results,
+            filter={},
+            rerank=rerank
+        ),
+        stream=True,
+        conversation_history=history,
+    )
 
-    # # Yield each chunk as it's recieved from the RAGPrompt generator
-    # for chunk in rag_prompt(prompt):
-    #     if chunk:
-    #         yield chunk
+    # Yield each chunk as it's received from the RAGPrompt generator
+    for chunk in rag_prompt(prompt):
+        if chunk:
+            yield chunk

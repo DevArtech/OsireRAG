@@ -17,20 +17,8 @@ mkdir -p image
 MAIL_USER="student@msoe.edu"
 DOCKER_IMAGE="nvidia/cuda:12.5.0-devel-ubuntu22.04"
 IMAGE_PATH="./image/container.sif"
+PASSWORD_FILE="./password.txt"
 FORCE_REBUILD=false
-
-if [ $# -lt 1 ]; then
-    echo "Usage: sbatch $0 <required_argument> [-m mail_user] [-i docker_image] [-f (force rebuild)]" >&2
-    exit 1
-fi
-
-## First argument is the required argument
-PASSWORD="$1"
-shift # Shift arguments to ignore the first one for getopts
-
-## Create hashed+salted password
-export SALT=$(openssl rand -hex 16)
-export API_TOKEN=$(echo -n "${SALT}${PASSWORD}" | openssl dgst -sha256 | awk '{print $2}')
 
 ## Parse optional command-line arguments
 while getopts "m:i:f" opt; do
@@ -68,6 +56,19 @@ find_port() {
 
     echo "No open port found in the range $start_port-$end_port" >&2
     return 1
+}
+
+generate_password() {
+    if [[ -f "$PASSWORD_FILE" && -s "$PASSWORD_FILE" ]]; then
+        echo "Using existing password from $PASSWORD_FILE"
+        PASSWORD=$(cat "$PASSWORD_FILE")
+    else
+        echo "Generating a new random password..."
+        PASSWORD=$(openssl rand -base64 16)
+        echo "$PASSWORD" > "$PASSWORD_FILE"
+        chmod 600 "$PASSWORD_FILE"
+        echo "Password saved to $PASSWORD_FILE with restricted permissions."
+    fi
 }
 
 ## Function to pull Docker image and build Singularity image if it does not exist or if forced

@@ -37,7 +37,20 @@ css = """
 .right-bar {width: 85% !important; flex-grow: 3.5 !important;}
 .send-button {position: absolute; z-index: 99; right: 10px; height: 100%; background: none; min-width: 0 !important;}
 footer {display: none !important;}
+
+/* Custom checkbox styling */
+.rerank-checkbox input[type="checkbox"] {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    margin-top: 1.75rem !important;
+}
+
+.rerank-checkbox span {
+    padding-top: 1.75rem !important;
+    font-size: 1rem !important;
+}
 """
+
 
 
 def update_project(project: str) -> Tuple[str, gr.update, gr.update, str, str]:
@@ -107,6 +120,8 @@ def rag_query(
     vs: str,
     model: str,
     conversation_history: List[Dict[str, str]],
+    n_results: int = 10,
+    rerank: bool = True,
 ) -> Iterator[Tuple[gr.update, gr.update, gr.update, None]]:
     """
     Queries the RosieRAG model and returns the response.
@@ -116,6 +131,9 @@ def rag_query(
     - `project (str)`: The selected project.
     - `vs (str)`: The selected vectorstore.
     - `model (str)`: The selected model.
+    - `conversation_history (List[Dict[str, str]])`: The conversation history.
+    - `n_results (int)`: Number of results to return from search.
+    - `rerank (bool)`: Whether to rerank the search results.
 
     Returns:
     - gr.update: The updated chatbot interface.
@@ -124,7 +142,7 @@ def rag_query(
     - None
 
     Usage:
-    - `rag_query(user_query, project, vs, model)`
+    - `rag_query(user_query, project, vs, model, conversation_history, n_results, rerank)`
 
     Author: Adam Haile
     Date: 11/25/2024
@@ -139,6 +157,8 @@ def rag_query(
         model=model,
         query=user_query,
         history=conversation_history,
+        n_results=n_results,
+        rerank=rerank
     )
 
     # Process the response
@@ -436,20 +456,20 @@ with gr.Blocks() as projects:
                     label="Keyword Models",
                 )
 
-                # Create the refresh button
-                refresh = gr.Button("Refresh")
-                refresh.click(
-                    fn=refresh_all,
-                    inputs=[],
-                    outputs=[
-                        project_dropdown,
-                        vs_dropdown,
-                        keyword_model_dropdown,
-                        selected_project,
-                        selected_vs,
-                        selected_model,
-                    ],
-                )
+            # Create the refresh button
+            refresh = gr.Button("Refresh")
+            refresh.click(
+                fn=refresh_all,
+                inputs=[],
+                outputs=[
+                    project_dropdown,
+                    vs_dropdown,
+                    keyword_model_dropdown,
+                    selected_project,
+                    selected_vs,
+                    selected_model,
+                ],
+            )
 
         # Create the new project, vectorstore, and model interface column
         with gr.Column():
@@ -499,11 +519,15 @@ with gr.Blocks() as params:
     k1 = gr.State(value=1.5)
     b = gr.State(value=0.75)
     epsilon = gr.State(value=0.25)
+    n_results = gr.State(value=10)
+    rerank = gr.State(value=True)
+    
     with gr.Row():
         with gr.Column():
             gr.Markdown(
                 "## Parameters\nThese are additional parameters you can modify for your RosieRAG model."
             )
+            
             gr.Markdown("### Ingestion Parameters")
             with gr.Row():
                 sentences_in = gr.Number(value=7, label="Number of Sentences per Chunk")
@@ -519,14 +543,30 @@ with gr.Blocks() as params:
                 epsilon_in = gr.Number(
                     value=0.25, label="epsilon - Smoothing Parameter for IDF", step=0.01
                 )
-            gr.Markdown("### Querying Parameters")
+            
+            gr.Markdown("### Search Parameters") 
+            with gr.Row():
+                n_results_in = gr.Number(
+                    value=10,
+                    label="Number of Results",
+                    step=1,
+                    minimum=1
+                )
+                rerank_in = gr.Checkbox(
+                    value=True,
+                    label="Rerank Results",
+                    elem_classes=["rerank-checkbox"]
+                )
 
+    # Bind state updates
     sentences_in.change(lambda s: s, inputs=sentences_in, outputs=sentences)
     chunk_len_in.change(lambda c: c, inputs=chunk_len_in, outputs=chunk_len)
     chunk_overlap_in.change(lambda o: o, inputs=chunk_overlap_in, outputs=chunk_overlap)
     k1_in.change(lambda k: k, inputs=k1_in, outputs=k1)
     b_in.change(lambda b: b, inputs=b_in, outputs=b)
     epsilon_in.change(lambda e: e, inputs=epsilon_in, outputs=epsilon)
+    n_results_in.change(lambda n: n, inputs=n_results_in, outputs=n_results)
+    rerank_in.change(lambda r: r, inputs=rerank_in, outputs=rerank)
 
 with gr.Blocks() as home:
     # Create the home interface w/ document ingestion, webpage ingestion, chat interface, and retrieved chunks
@@ -550,7 +590,7 @@ with gr.Blocks() as home:
             with gr.Row():
                 with gr.Column(scale=4):
                     gr.Markdown("## RAG Chat Interface")
-                    chatbot = gr.Chatbot(height=425, type="messages")
+                    chatbot = gr.Chatbot(height=425, type="messages", latex_delimiters=[{"left": "$", "right": "$", "display": True}])
 
                     # Conversation history state
                     conversation_history = gr.State(value=[])
@@ -576,6 +616,8 @@ with gr.Blocks() as home:
                     selected_vs,
                     selected_model,
                     conversation_history,
+                    n_results,
+                    rerank
                 ],
                 outputs=[chatbot, chunks, conversation_history, textbox],
             )
@@ -618,6 +660,7 @@ with gr.Blocks() as home:
 
 # Create the Gradio interface and connect the home and projects interfaces
 with gr.Blocks(title="RosieRAG", css=css) as io:
+    gr.Markdown("## <div style='display: flex; align-items: center; gap: 0.5rem;'><img src='https://i.imgur.com/zWuIP3A.png' width='64' height='64'> RosieRAG</div>")
     gr.TabbedInterface([home, projects, params], ["Home", "Projects", "Parameters"])
 
 io.queue()

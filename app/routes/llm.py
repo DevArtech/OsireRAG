@@ -23,12 +23,14 @@ Date: 10/30/2024
 """
 
 import json
+import time
 import textwrap
 from fastapi import APIRouter
 from dataclasses import dataclass
 from pydantic import BaseModel, field_validator
 from fastapi.responses import StreamingResponse
 from typing import Iterator, Tuple, List, Optional, Dict, Any
+
 
 from app.core.logger import logger
 from app.core.models.llm import llm
@@ -137,17 +139,17 @@ def craft_rag_prompt(prompt: RAGPrompt) -> Tuple[str, List[Tuple[Chunk, float]]]
         params=prompt.params,
     )
     logger.info(
-        f"Retrieved documents: {'\n\n'.join([doc[0].content for doc in documents])}"
+        "Retrieved documents: " + "\n\n".join(doc[0].content for doc in documents)
     )
 
     # Craft the new RAG prompt
     new_prompt = textwrap.dedent(
-        f"""Contextual Information is below:
+        """Contextual Information is below:
             ------------------------------------------
-            {"\n\n".join([doc[0].content for doc in documents])}
+            {}
             ------------------------------------------
             Use the context information, and not prior knowledge, to answer the query prompted by the user.
-            """
+            """.format("\n\n".join(doc[0].content for doc in documents))
     )
 
     # Apply special prompting if using local llama-cpp-python model
@@ -191,7 +193,9 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
     """
 
     # Get the RAG prompt and documents
+    start_time = time.time()
     contextual_prompt, documents = craft_rag_prompt(prompt)
+
 
     # Prompt the LLM and yield the results
     response = ""
@@ -202,7 +206,7 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
         yield item.replace('"', '\\"')
         response += item.replace('"', '\\"')
 
-    logger.info(f"Model Response: {response}")
+    logger.info(f"Model Response: {response} - Time: {time.time() - start_time}")
 
     # ID the chunks and yield them
     yield "<|C|>"

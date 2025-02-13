@@ -14,7 +14,7 @@ Usage:
 Author: Adam Haile  
 Date: 10/16/2024
 """
-
+import hashlib
 from fastapi import Request
 from typing import Callable, Any
 from fastapi.responses import JSONResponse
@@ -45,7 +45,7 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
         """
         Called by FastAPI when a request is received. Validates the API token in the request.
         """
-        accepted_paths = ["/ping", "/assets", "/gradio_api"]
+        accepted_paths = ["/ping", "/assets", "/gradio_api", "/login", "/submit-token"]
         if get_settings().ENVIRONMENT != "local" and not any(
             path in request.url.path for path in accepted_paths
         ):
@@ -63,7 +63,7 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
                 token = request.cookies.get("apitoken")
 
             # Return 401 if token is not found or is invalid
-            if not token or not self.validate_token(token):
+            if not token or not validate_token(token):
                 return JSONResponse(
                     status_code=401, content={"detail": "Invalid token"}
                 )
@@ -71,8 +71,9 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         return response
 
-    def validate_token(self, token: str) -> bool:
-        """
-        Validates the API token in the request.
-        """
-        return token == get_settings().API_TOKEN
+    
+def validate_token(token: str) -> bool:
+    salt = get_settings().SALT
+    api_token = get_settings().API_TOKEN
+
+    return hashlib.sha256((salt + token).encode()).hexdigest() == api_token

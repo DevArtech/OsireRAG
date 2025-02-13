@@ -19,18 +19,18 @@ Date: 9/24/2024
 """
 
 import os
+os.makedirs("./.rosierag", exist_ok=True)
+
 import gradio as gr
-from fastapi import FastAPI, status
-from fastapi.responses import Response
+from fastapi import FastAPI, status, Form
+from fastapi.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
 
 from app.api.api import api_router
 from app.core.logger import logger
 from app.core.interface.gradio import io
 from app.core.settings import get_settings
-from app.core.middleware.token_validator import TokenValidationMiddleware
+from app.core.middleware.token_validator import TokenValidationMiddleware, validate_token
 
-# Validate the rosierag directory exists
-os.makedirs("./.rosierag", exist_ok=True)
 
 # Set the rosie path based on the environment
 if get_settings().ENVIRONMENT == "local":
@@ -54,6 +54,46 @@ app.include_router(api_router)
 @api_router.get("/ping/", tags=["admin"])
 async def health_check():
     return Response(status_code=status.HTTP_200_OK)
+
+
+@app.get("/login/", tags=["admin"], include_in_schema=False)
+async def login_page():
+    html_content = f"""
+    <html>
+        <head>
+            <title>RosieRAG Login</title>
+        </head>
+        <body>
+            <h2>Enter Your Password</h2>
+            <form action="{get_settings().BASE_URL}/submit-token" method="post">
+                <label for="token">Password:</label>
+                <input type="password" id="token" name="token" required>
+                <button type="submit">Submit</button>
+            </form>
+        </body>
+    </html>
+    """
+    return HTMLResponse(html_content)
+
+
+# Custom endpoint to submit the password
+@app.post("/submit-token/", tags=["admin"], include_in_schema=False)
+async def submit_token(token: str = Form(...)):
+    result = validate_token(token)
+    if result:
+        response = RedirectResponse(
+            url=get_settings().BASE_URL + "/docs", status_code=302
+        )
+        response.set_cookie(
+            key="apitoken",
+            value=token,
+            max_age=86400,
+            secure=True,
+            path=get_settings().BASE_URL + "/",
+        )
+        return response
+
+    return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
 
 # Mount the Gradio interface to the FastAPI application

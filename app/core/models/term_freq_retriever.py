@@ -221,8 +221,13 @@ class BM25Model(BaseModel):
         path = os.path.join("./.rosierag", project_name, model_name)
 
         # Load the documents
-        with open(os.path.abspath(os.path.join(path, "documents.pkl")), "rb") as f:
-            tokenized_documents = pickle.load(f)
+        try:
+            with open(os.path.abspath(os.path.join(path, "documents.pkl")), "rb") as f:
+                tokenized_documents = pickle.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"The provided model {model_name} does not have the necessary files. Please ensure documents have been uploaded before attemtping to query the model."
+            )
 
         # Load the BM25 model
         with open(os.path.abspath(os.path.join(path, "model.pkl")), "rb") as f:
