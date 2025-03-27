@@ -46,6 +46,7 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
         Called by FastAPI when a request is received. Validates the API token in the request.
         """
         accepted_paths = ["/ping", "/assets", "/gradio_api", "/login", "/submit-token"]
+        token = None
         if get_settings().ENVIRONMENT != "local" and not any(
             path in request.url.path for path in accepted_paths
         ):

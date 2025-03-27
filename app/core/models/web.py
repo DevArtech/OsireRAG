@@ -60,7 +60,7 @@ class WebScraper(BaseModel):
         Date: 10/7/2024
         """
         # Define the project directory path
-        project_path = f"./.rosierag/{project_name}"
+        project_path = f"./.osirerag/{project_name}"
 
         # Check if the project directory exists
         if not os.path.exists(project_path):

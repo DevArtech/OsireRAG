@@ -19,7 +19,7 @@ Date: 10/9/2024
 
 from pydantic import BaseModel
 from typing import List, ClassVar
-from langchain_huggingface import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
 
 from app.core.settings import get_settings
 from app.core.logger import logger, COLORS
@@ -64,7 +64,7 @@ class DocumentEmbedder(BaseModel):
     Date: 10/9/2024
     """
 
-    hf: ClassVar[HuggingFaceEmbeddings] = None
+    hf: ClassVar[SentenceTransformer] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -91,9 +91,9 @@ class DocumentEmbedder(BaseModel):
             f"{COLORS().WARNING}Initializing Embedding Model - This may take a second{COLORS().RESET}"
         )
         # Initialize the HuggingFaceEmbeddings object
-        DocumentEmbedder.hf = HuggingFaceEmbeddings(
+        DocumentEmbedder.hf = SentenceTransformer(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={
+            model_kwargs={  
                 "device": get_settings().DEVICE if get_settings().DEVICE else "cuda"
             },
             encode_kwargs={"normalize_embeddings": False},
@@ -116,7 +116,7 @@ class DocumentEmbedder(BaseModel):
         Author: Adam Haile
         Date: 10/9/2024
         """
-        embedded_docs = self.hf.embed_documents([chunk.content for chunk in chunks])
+        embedded_docs = self.hf.encode([chunk.content for chunk in chunks])
         return [
             EmbeddedChunk(embedding=embedded_docs[i], **chunk.model_dump())
             for i, chunk in enumerate(chunks)
@@ -138,7 +138,7 @@ class DocumentEmbedder(BaseModel):
         Author: Adam Haile
         Date: 10/9/2024
         """
-        return self.hf.embed_query(query)
+        return self.hf.encode(query)
 
 
 embedder = DocumentEmbedder()

@@ -2,7 +2,7 @@
 Module: llm.py (Router)
 
 This module contains the FastAPI router for the large language model. The large language model is a
-module that allows users to interact with the RosieRAG model and recieve LLM summarizations of the chunks.
+module that allows users to interact with the OsireRAG model and recieve LLM summarizations of the chunks.
 
 Classes:
 - Prompt: A recieve contract for the prompt endpoint.

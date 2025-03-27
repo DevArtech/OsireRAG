@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     - DEVICE (str): The device to use for processing (options: "cpu", "cuda").
     - BASE_URL (str): The base URL for the FastAPI application.
     - MODEL_PATH (str): The path to the model for the LLM if using a local model.
-    - ROSIE_LLM (str): The URL for the Rosie LLM.
+    - HPC_LLM (str): The URL for the HPC LLM.
 
     Usage:
     - settings = get_settings().APP_NAME
@@ -45,13 +45,14 @@ class Settings(BaseSettings):
     """
 
     API_TOKEN: str
-    APP_NAME: str = "RosieRAG"
-    ENVIRONMENT: str = "Rosie"
+    APP_NAME: str = "OsireRAG"
+    ENVIRONMENT: str = "HPC"
     DEVICE: str = "cuda"
     BASE_URL: str = ""
     MODEL_PATH: str = "/home/hailea/Llama-3.2-3B-Instruct.gguf"
-    ROSIE_LLM: str = "http://dh-dgxh100-2.hpc.msoe.edu:8000/v1"
+    HPC_LLM: str = "http://dh-dgxh100-2.hpc.msoe.edu:8000/v1"
     TOKENIZER_PATH: str = os.path.abspath("./app/models/tokenizer.pkl")
+    REMOTE_MODEL: str = "meta-llama/Llama-3.3-70B-Instruct"
 
     class Config:
         env_file = ".env"

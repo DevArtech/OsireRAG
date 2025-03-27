@@ -63,7 +63,7 @@ async def create_vectorstore(project_name: str, vectorstore_name: str) -> JSONRe
     """
 
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -111,7 +111,7 @@ async def add_chunks(
     Date: 10/13/2024
     """
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -158,7 +158,7 @@ async def get_chunks(
     Date: 10/13/2024
     """
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -188,7 +188,7 @@ async def get_chunks(
 
 # @router.delete("/{project_name}/delete/{vectorstore_name}")
 # async def delete_chunks(project_name: str, vectorstore_name: str, ids: List[str]) -> JSONResponse:
-#     project_path = f"./.rosierag/{project_name}"
+#     project_path = f"./.osirerag/{project_name}"
 #     if not os.path.exists(project_path):
 #         return JSONResponse(status_code=404, content="Project not found.")
 
@@ -235,7 +235,7 @@ async def search(
     Date: 10/13/2024
     """
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 

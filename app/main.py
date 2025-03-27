@@ -12,14 +12,14 @@ Functions:
 
 Attributes:
 - app: The FastAPI application object.
-- rosie_path: The URL of the RosieRAG application.
+- hpc_path: The URL of the OsireRAG application.
 
 Author: Adam Haile  
 Date: 9/24/2024
 """
 
 import os
-os.makedirs("./.rosierag", exist_ok=True)
+os.makedirs("./.osirerag", exist_ok=True)
 
 import gradio as gr
 from fastapi import FastAPI, status, Form
@@ -32,15 +32,15 @@ from app.core.settings import get_settings
 from app.core.middleware.token_validator import TokenValidationMiddleware, validate_token
 
 
-# Set the rosie path based on the environment
+# Set the hpc path based on the environment
 if get_settings().ENVIRONMENT == "local":
-    rosie_path = "http://localhost:8080"
+    hpc_path = "http://localhost:8080"
 else:
-    rosie_path = "https://dh-ood.hpc.msoe.edu" + get_settings().BASE_URL + "/"
+    hpc_path = "https://dh-ood.hpc.msoe.edu" + get_settings().BASE_URL + "/"
 
 # Create the FastAPI application
 app = FastAPI(
-    title="RosieRAG", root_path=get_settings().BASE_URL, redirect_slashes=True
+    title="OsireRAG", root_path=get_settings().BASE_URL, redirect_slashes=True
 )
 
 # Add the token validation middleware
@@ -71,4 +71,4 @@ app = gr.mount_gradio_app(
 # Log the URL the application is running at
 @app.on_event("startup")
 async def startup_event():
-    logger.info(f"RosieRAG is running at: {rosie_path}")
+    logger.info(f"OsireRAG is running at: {hpc_path}")

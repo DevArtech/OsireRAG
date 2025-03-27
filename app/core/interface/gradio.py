@@ -1,15 +1,15 @@
 """
 Module: gradio.py
 
-This module is responsible for creating and managing the Gradio interface for the RosieRAG application.
+This module is responsible for creating and managing the Gradio interface for the OsireRAG application.
 
 Classes:
 - None
 
 Functions:
 - update_project: Updates the project, vectorstore, and model dropdowns based on the selected project.
-- rag_query: Queries the RosieRAG model and returns the response.
-- create_knowledge_base: Creates a new knowledge base in RosieRAG.
+- rag_query: Queries the OsireRAG model and returns the response.
+- create_knowledge_base: Creates a new knowledge base in OsireRAG.
 - refresh_all: Refreshes the project, vectorstore, and model dropdowns.
 
 Attributes:
@@ -77,22 +77,22 @@ def update_project(project: str) -> Tuple[str, gr.update, gr.update, str, str]:
     # Collect the vectorstores for the given project
     vs_list = [
         i
-        for i in os.listdir(f"./.rosierag/{project}")
-        if os.path.isdir(f"./.rosierag/{project}/{i}")
+        for i in os.listdir(f"./.osirerag/{project}")
+        if os.path.isdir(f"./.osirerag/{project}/{i}")
         and any(
             fname.endswith(".faiss")
-            for fname in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for fname in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
         )
     ]
 
     # Collect the keyword models for the given project
     model_list = [
         i
-        for i in os.listdir(f"./.rosierag/{project}")
-        if os.path.isdir(f"./.rosierag/{project}/{i}")
+        for i in os.listdir(f"./.osirerag/{project}")
+        if os.path.isdir(f"./.osirerag/{project}/{i}")
         and not any(
             fname.endswith(".faiss")
-            for fname in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for fname in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
         )
     ]
 
@@ -124,7 +124,7 @@ def rag_query(
     rerank: bool = True,
 ) -> Iterator[Tuple[gr.update, gr.update, gr.update, None]]:
     """
-    Queries the RosieRAG model and returns the response.
+    Queries the OsireRAG model and returns the response.
 
     Args:
     - `user_query (str)`: The user's query.
@@ -150,7 +150,7 @@ def rag_query(
     # Add the user's query to the conversation history
     conversation_history.append({"role": "user", "content": user_query})
 
-    # Query the RosieRAG model
+    # Query the OsireRAG model
     response = query(
         project=project,
         vs=vs,
@@ -247,16 +247,16 @@ def create_knowledge_base(
         gr.Info(f"Knowledge base '{project}/{vs}+{model}' created successfully.")
 
         # Get the updated dropdowns
-        project_update = gr.update(choices=os.listdir("./.rosierag"), value=project)
+        project_update = gr.update(choices=os.listdir("./.osirerag"), value=project)
         vs_update = gr.update(
             choices=[
                 i
-                for i in os.listdir(f"./.rosierag/{project}")
-                if os.path.isdir(f"./.rosierag/{project}/{i}")
+                for i in os.listdir(f"./.osirerag/{project}")
+                if os.path.isdir(f"./.osirerag/{project}/{i}")
                 and any(
                     fname.endswith(".faiss")
                     for fname in os.listdir(
-                        f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                        f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                     )
                 )
             ],
@@ -265,12 +265,12 @@ def create_knowledge_base(
         model_update = gr.update(
             choices=[
                 i
-                for i in os.listdir(f"./.rosierag/{project}")
-                if os.path.isdir(f"./.rosierag/{project}/{i}")
+                for i in os.listdir(f"./.osirerag/{project}")
+                if os.path.isdir(f"./.osirerag/{project}/{i}")
                 and not any(
                     fname.endswith(".faiss")
                     for fname in os.listdir(
-                        f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                        f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                     )
                 )
             ],
@@ -309,35 +309,35 @@ def refresh_all() -> (
     Date: 11/25/2024
     """
     # Get the projects, vectorstores, and models
-    projects = os.listdir("./.rosierag")
+    projects = os.listdir("./.osirerag")
     vs = (
         [
             i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for i in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}")
+            if os.path.isdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
             and any(
                 fname.endswith(".faiss")
                 for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                 )
             )
         ]
-        if len(os.listdir("./.rosierag")) > 0
+        if len(os.listdir("./.osirerag")) > 0
         else []
     )
     models = (
         [
             i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for i in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}")
+            if os.path.isdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
             and not any(
                 fname.endswith(".faiss")
                 for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                 )
             )
         ]
-        if len(os.listdir("./.rosierag")) > 0
+        if len(os.listdir("./.osirerag")) > 0
         else []
     )
 
@@ -368,38 +368,38 @@ with gr.Blocks() as projects:
     new_model = gr.State()
     selected_project = gr.State(
         value=(
-            os.listdir("./.rosierag")[0] if len(os.listdir("./.rosierag")) > 0 else None
+            os.listdir("./.osirerag")[0] if len(os.listdir("./.osirerag")) > 0 else None
         )
     )
     vss = (
         [
             i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for i in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}")
+            if os.path.isdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
             and any(
                 fname.endswith(".faiss")
                 for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                 )
             )
         ]
-        if len(os.listdir("./.rosierag")) > 0
+        if len(os.listdir("./.osirerag")) > 0
         else []
     )
     selected_vs = gr.State(value=vss[0] if vss else None)
     models = (
         [
             i
-            for i in os.listdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}")
-            if os.path.isdir(f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}")
+            for i in os.listdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}")
+            if os.path.isdir(f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}")
             and not any(
                 fname.endswith(".faiss")
                 for fname in os.listdir(
-                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                 )
             )
         ]
-        if len(os.listdir("./.rosierag")) > 0
+        if len(os.listdir("./.osirerag")) > 0
         else []
     )
     selected_model = gr.State(value=models[0] if models else None)
@@ -409,26 +409,26 @@ with gr.Blocks() as projects:
         with gr.Column():
             with gr.Row():
                 project_dropdown = gr.Dropdown(
-                    choices=os.listdir("./.rosierag"), label="Projects"
+                    choices=os.listdir("./.osirerag"), label="Projects"
                 )
                 vs_dropdown = gr.Dropdown(
                     choices=(
                         [
                             i
                             for i in os.listdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}"
+                                f"./.osirerag/{os.listdir('./.osirerag')[0]}"
                             )
                             if os.path.isdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                                f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                             )
                             and any(
                                 fname.endswith(".faiss")
                                 for fname in os.listdir(
-                                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                                 )
                             )
                         ]
-                        if len(os.listdir("./.rosierag")) > 0
+                        if len(os.listdir("./.osirerag")) > 0
                         else []
                     ),
                     label="Vectorstores",
@@ -438,19 +438,19 @@ with gr.Blocks() as projects:
                         [
                             i
                             for i in os.listdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}"
+                                f"./.osirerag/{os.listdir('./.osirerag')[0]}"
                             )
                             if os.path.isdir(
-                                f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                                f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                             )
                             and not any(
                                 fname.endswith(".faiss")
                                 for fname in os.listdir(
-                                    f"./.rosierag/{os.listdir('./.rosierag')[0]}/{i}"
+                                    f"./.osirerag/{os.listdir('./.osirerag')[0]}/{i}"
                                 )
                             )
                         ]
-                        if len(os.listdir("./.rosierag")) > 0
+                        if len(os.listdir("./.osirerag")) > 0
                         else []
                     ),
                     label="Keyword Models",
@@ -525,7 +525,7 @@ with gr.Blocks() as params:
     with gr.Row():
         with gr.Column():
             gr.Markdown(
-                "## Parameters\nThese are additional parameters you can modify for your RosieRAG model."
+                "## Parameters\nThese are additional parameters you can modify for your OsireRAG model."
             )
             
             gr.Markdown("### Ingestion Parameters")
@@ -598,7 +598,7 @@ with gr.Blocks() as home:
                     with gr.Row():
                         textbox = gr.Textbox(
                             show_label=False,
-                            placeholder="Message RosieRAG...",
+                            placeholder="Message OsireRAG...",
                             scale=6,
                             submit_btn=True,
                         )
@@ -607,7 +607,7 @@ with gr.Blocks() as home:
                     gr.Markdown("## Retrieved Chunks")
                     chunks = gr.JSON(label="Chunks", value=None)
 
-            # Query the RosieRAG model based on the user's input
+            # Query the OsireRAG model based on the user's input
             textbox.submit(
                 fn=rag_query,
                 inputs=[
@@ -659,8 +659,8 @@ with gr.Blocks() as home:
         )
 
 # Create the Gradio interface and connect the home and projects interfaces
-with gr.Blocks(title="RosieRAG", css=css) as io:
-    gr.Markdown("## <div style='display: flex; align-items: center; gap: 0.5rem;'><img src='https://i.imgur.com/zWuIP3A.png' width='64' height='64'> RosieRAG</div>")
+with gr.Blocks(title="OsireRAG", css=css) as io:
+    gr.Markdown("## <div style='display: flex; align-items: center; gap: 0.5rem;'><img src='https://i.imgur.com/zWuIP3A.png' width='64' height='64'> OsireRAG</div>")
     gr.TabbedInterface([home, projects, params], ["Home", "Projects", "Parameters"])
 
 io.queue()

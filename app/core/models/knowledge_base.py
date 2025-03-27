@@ -1,10 +1,10 @@
 """
 Module: knowledge_base.py
 
-Contains the KnowledgeBase of the RosieRAG system. Utilizes all submodules to create a centralized knowledge base.
+Contains the KnowledgeBase of the OsireRAG system. Utilizes all submodules to create a centralized knowledge base.
 
 Classes:
-- KnowledgeBase: A class representing the RosieRAG knowledge base.
+- KnowledgeBase: A class representing the OsireRAG knowledge base.
 - SearchParameters: Dataclass model for search parameters.
 - DocumentArgs: Dataclass model for document arguments.
 
@@ -97,7 +97,7 @@ class DocumentArgs:
 
 class KnowledgeBase(BaseModel):
     """
-    A class representing the RosieRAG knowledge base.
+    A class representing the OsireRAG knowledge base.
 
     Attributes:
     - chunker: DocumentChunker: The document chunker.
@@ -118,7 +118,7 @@ class KnowledgeBase(BaseModel):
     - search: Searches the knowledge base.
 
     Usage:
-    - Create an instance of this class to represent the RosieRAG knowledge base.
+    - Create an instance of this class to represent the OsireRAG knowledge base.
 
     Author: Adam Haile
     Date: 10/16/2024
@@ -160,7 +160,7 @@ class KnowledgeBase(BaseModel):
         """
 
         # Validate the project
-        project_path = os.path.join(os.getcwd(), ".rosierag", project)
+        project_path = os.path.join(os.getcwd(), ".osirerag", project)
         if not os.path.exists(project_path):
             if create_if_not_exists:
                 os.makedirs(project_path)
@@ -170,7 +170,7 @@ class KnowledgeBase(BaseModel):
             raise ValueError("Project already exists.")
 
         # Validate the vectorstore
-        vs_path = os.path.join(os.getcwd(), ".rosierag", project, vs)
+        vs_path = os.path.join(os.getcwd(), ".osirerag", project, vs)
         if not os.path.exists(vs_path):
             if create_if_not_exists:
                 os.makedirs(vs_path)
@@ -180,7 +180,7 @@ class KnowledgeBase(BaseModel):
             raise ValueError("Vectorstore already exists")
 
         # Validate the keyword model
-        model_path = os.path.join(os.getcwd(), ".rosierag", project, model)
+        model_path = os.path.join(os.getcwd(), ".osirerag", project, model)
         if not os.path.exists(model_path):
             if create_if_not_exists:
                 os.makedirs(model_path)

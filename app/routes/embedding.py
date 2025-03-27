@@ -8,8 +8,8 @@ Classes:
 - None
 
 Functions:
-- embed_query: Embed a query in the RosieRAG API.
-- embed_chunks: Embed a set of chunks in the RosieRAG API.
+- embed_query: Embed a query in the OsireRAG API.
+- embed_chunks: Embed a set of chunks in the OsireRAG API.
 
 Attributes:
 - router: The FastAPI router object
@@ -40,7 +40,7 @@ router = APIRouter(prefix="/embedding", tags=["embedding"])
 )
 async def embed_query(query: str) -> JSONResponse:
     """
-    Embed a query in the RosieRAG API.
+    Embed a query in the OsireRAG API.
 
     Args:
     - `query (str)`: The query to embed.
@@ -67,7 +67,7 @@ async def embed_query(query: str) -> JSONResponse:
 )
 async def embed_chunks(chunks: List[Chunk]) -> StreamingResponse:
     """
-    Embed a set of chunks in the RosieRAG API.
+    Embed a set of chunks in the OsireRAG API.
 
     Args:
     - `chunks (List[Chunk])`: The chunks to embed.

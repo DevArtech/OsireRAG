@@ -9,7 +9,7 @@ Classes:
 
 Functions:
 - create_project: Create a new project to store documents.
-- list_documents: List all documents currently stored in the RosieRAG API at the given project.
+- list_documents: List all documents currently stored in the OsireRAG API at the given project.
 - upload_documents: Upload a new document.
 - retrieve_document: Retrieve a specific document by index or name.
 - delete_documents: Delete a document or a list of documents.
@@ -58,7 +58,7 @@ async def create_project(project_name: str) -> JSONResponse:
     Author: Adam Haile
     Date: 10/7/2024
     """
-    project_path = f"./.rosierag/{project_name}"
+    project_path = f"./.osirerag/{project_name}"
     if not os.path.exists(project_path):
         os.makedirs(project_path)
     else:
@@ -83,7 +83,7 @@ async def create_project(project_name: str) -> JSONResponse:
 )
 async def list_documents(project_name: str) -> JSONResponse:
     """
-    List all documents currently stored in the RosieRAG API at the given project.
+    List all documents currently stored in the OsireRAG API at the given project.
 
     Args:
     - `project_name (str)`: The name of the project to list documents from.
@@ -101,7 +101,7 @@ async def list_documents(project_name: str) -> JSONResponse:
     Date: 10/7/2024
     """
     documents = []
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -147,7 +147,7 @@ async def upload_documents(project_name: str, file: UploadFile) -> JSONResponse:
     """
 
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -197,7 +197,7 @@ async def retrieve_document(project_name: str, file: str) -> JSONResponse:
     """
 
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 
@@ -253,7 +253,7 @@ async def delete_documents(project_name: str, file: str) -> Response:
     Date: 10/7/2024
     """
     # Validate the project exists
-    project_path = os.path.join(os.path.abspath("./.rosierag"), project_name)
+    project_path = os.path.join(os.path.abspath("./.osirerag"), project_name)
     if not os.path.exists(project_path):
         return JSONResponse(status_code=404, content={"detail": "Project not found."})
 

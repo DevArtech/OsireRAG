@@ -181,7 +181,7 @@ class BM25Model(BaseModel):
         - `bm25.create_model("project", "model", tokenized_chunks)`
         """
         # Create the model directory if it does not exist
-        path = os.path.join("./.rosierag", project_name, model_name)
+        path = os.path.join("./.osirerag", project_name, model_name)
         os.makedirs(path, exist_ok=True)
 
         # Create and save the BM25 model from the tokenized documents
@@ -218,7 +218,7 @@ class BM25Model(BaseModel):
         Date: 10/23/2024
         """
         # Load the tokenized documents and BM25 model from disk
-        path = os.path.join("./.rosierag", project_name, model_name)
+        path = os.path.join("./.osirerag", project_name, model_name)
 
         # Load the documents
         try:

@@ -76,8 +76,8 @@ class LLM(BaseModel):
 
             logger.info(f"{COLORS().INFO}LLM Model Initialized{COLORS().RESET}")
         else:
-            LLM.llm = OpenAI(base_url=get_settings().ROSIE_LLM, api_key="not_used")
-            logger.info("Connected to Rosie Meta LLaMa Model")
+            LLM.llm = OpenAI(base_url=get_settings().HPC_LLM, api_key="not_used")
+            logger.info("Connected to HPC LLM Model")
 
     def _tokenize(
         self, messages: List[Dict[str, str]], l: int = 100000
@@ -151,10 +151,10 @@ class LLM(BaseModel):
                 .strip()
             )
         else:
-            # Querying and parsing for if using the Rosie Meta LLM.
+            # Querying and parsing for if using the HPC LLM.
             return (
                 self.llm.chat.completions.create(
-                    model="meta/llama-3.1-70b-instruct",
+                    model=get_settings().REMOTE_MODEL,
                     messages=[
                         {
                             "role": "user",
@@ -222,7 +222,7 @@ class LLM(BaseModel):
             ):
                 yield token["choices"][0]["text"]
         else:
-            # Querying and parsing for if using the Rosie Meta LLM.
+            # Querying and parsing for if using the HPC LLM.
 
             # Create a full prompt with the history
             full_messages = []
@@ -236,7 +236,7 @@ class LLM(BaseModel):
 
             # Stream the LLM model output
             for token in self.llm.chat.completions.create(
-                model="meta/llama-3.1-70b-instruct",
+                model=get_settings().REMOTE_MODEL,
                 messages=full_messages,
                 max_tokens=max_length - tokens_used,
                 stream=True,

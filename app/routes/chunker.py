@@ -61,7 +61,7 @@ async def chunk_file(
     """
 
     # Create a temporary directory to store the documents
-    temp_dir = f"./.rosierag/tmp_{uuid.uuid4()}"
+    temp_dir = f"./.osirerag/tmp_{uuid.uuid4()}"
     os.makedirs(temp_dir)
 
     tmp_documents = []

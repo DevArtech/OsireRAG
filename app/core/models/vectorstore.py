@@ -22,7 +22,7 @@ import faiss
 import pickle
 import numpy as np
 from pydantic import BaseModel
-from langchain_huggingface import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Optional, Tuple, Any, Union, ClassVar
 
 from app.core.models.chunker import Chunk
@@ -67,7 +67,7 @@ class FAISS(BaseModel):
     Date: 10/13/2024
     """
 
-    embedding_function: HuggingFaceEmbeddings
+    embedding_function: SentenceTransformer
     index: faiss.IndexFlatL2
     docstore: Dict[Any, Any]
     index_to_docstore_id: Dict[int, Any]
@@ -101,7 +101,7 @@ class VectorstoreManager(BaseModel):
     Date: 10/13/2024
     """
 
-    embedding_function: ClassVar[HuggingFaceEmbeddings] = embedder.hf
+    embedding_function: ClassVar[SentenceTransformer] = embedder.hf
     index: ClassVar[faiss.IndexFlatL2] = faiss.IndexFlatL2(384)
     docstore: Dict[Any, Any] = {}
 
