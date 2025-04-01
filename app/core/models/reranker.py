@@ -14,7 +14,7 @@ Author: Adam Haile
 Date: 11/3/2024
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Tuple, ClassVar
 from sentence_transformers import CrossEncoder
 
@@ -45,8 +45,8 @@ class Reranker(BaseModel):
         device=get_settings().DEVICE,
     )
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Replace deprecated Config class with ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def cross_encode_rerank(
         self, query: str, documents: List[Chunk]

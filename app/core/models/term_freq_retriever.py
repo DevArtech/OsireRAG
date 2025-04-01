@@ -20,7 +20,7 @@ import os
 import nltk
 import pickle
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from rank_bm25 import BM25Okapi
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -69,8 +69,8 @@ class ChunkTokenizer(BaseModel):
     stop_words: ClassVar[set] = set(stopwords.words("english"))
     lemmatizer: ClassVar[WordNetLemmatizer] = WordNetLemmatizer()
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Replace deprecated Config class with ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self):
         """

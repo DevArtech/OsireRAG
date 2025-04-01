@@ -19,7 +19,7 @@ Date: 9/27/2024
 import os
 from functools import lru_cache
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 abs_path_env = os.path.abspath("../../.env")
 
@@ -54,8 +54,7 @@ class Settings(BaseSettings):
     TOKENIZER_PATH: str = os.path.abspath("./app/models/tokenizer.pkl")
     REMOTE_MODEL: str = "meta/llama-3.3-70b-instruct"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 @lru_cache()

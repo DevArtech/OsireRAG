@@ -19,7 +19,7 @@ import json
 import pickle
 from openai import OpenAI
 from llama_cpp import Llama
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from transformers import AutoTokenizer
 from typing import Iterator, Union, Optional, List, Dict, ClassVar, Tuple
 
@@ -50,8 +50,8 @@ class LLM(BaseModel):
     llm: ClassVar[Union[Llama, OpenAI]] = None
     tokenizer: ClassVar[AutoTokenizer] = None
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Replace deprecated Config class with ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self):
         super().__init__()

@@ -21,7 +21,7 @@ import uuid
 import faiss
 import pickle
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Optional, Tuple, Any, Union, ClassVar
 
@@ -72,8 +72,8 @@ class FAISS(BaseModel):
     docstore: Dict[Any, Any]
     index_to_docstore_id: Dict[int, Any]
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Replace deprecated Config class with ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class VectorstoreManager(BaseModel):
@@ -105,8 +105,8 @@ class VectorstoreManager(BaseModel):
     index: ClassVar[faiss.IndexFlatL2] = faiss.IndexFlatL2(384)
     docstore: Dict[Any, Any] = {}
 
-    class Config:
-        arbitrary_types_allowed = True
+    # Replace deprecated Config class with ConfigDict
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def create_vectorstore(self) -> FAISS:
         """

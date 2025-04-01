@@ -34,7 +34,7 @@ python_version = "3.12"
 
 [scripts]
 start = "uvicorn app.main:app --reload --port 8080 --host localhost"
-test = "python -m pytest tests/run_tests.py"
+test = "python tests/run_tests.py"
 format = "python -m black ."
 lint = "python -m flake8 src"
 docs = "docs.sh"
