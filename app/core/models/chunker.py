@@ -25,7 +25,7 @@ from spacy.language import Language
 warnings.filterwarnings("ignore", message=r"\[W095\]")
 
 import spacy
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from langchain_text_splitters import (
     HTMLHeaderTextSplitter,
     RecursiveCharacterTextSplitter,
@@ -84,15 +84,13 @@ class DocumentChunker(BaseModel):
     Date: 10/9/2024
     """
 
+    # Use ConfigDict to replace the deprecated Config class
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     nlp: ClassVar[Language] = spacy.load("en_core_web_sm")
     splitter: ClassVar[HTMLHeaderTextSplitter] = HTMLHeaderTextSplitter(
         headers_to_split_on
     )
-
-    # Config class to allow Language and HTMLHeaderTextSplitter to be
-    # passed as type hints without errors from Pydantic
-    class Config:
-        arbitrary_types_allowed = True
 
     def chunk_document(self, document: Document, n: int = 3, **kwargs) -> List[Chunk]:
         """

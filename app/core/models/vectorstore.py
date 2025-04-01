@@ -271,7 +271,7 @@ class VectorstoreManager(BaseModel):
         - `search_params (VectorstoreSearchParameters)`: The search parameters.
 
         Returns:
-        - List[Tuple[Chunk, float]]: A list of chunks and their distances.
+        - List[Tuple[Chunk, float]]: A list of chunks and their similarity scores.
 
         Usage:
         - `results = manager.search(vectorstore, search_params)`
@@ -288,7 +288,7 @@ class VectorstoreManager(BaseModel):
         distances, indices = vectorstore.index.search(query, search_params.k)
 
         results = []
-        # Get the chunks and distances
+        # Get the chunks and convert distances to similarity scores
         for dist, idx in zip(distances[0], indices[0]):
             if idx == -1:
                 continue
@@ -304,7 +304,9 @@ class VectorstoreManager(BaseModel):
                 index=doc_data["index"],
                 metadata=metadata,
             )
-            results.append((chunk, dist))  # Add the Chunk and its distance to results.
+            # Convert distance to similarity score (using exponential decay)
+            similarity_score = np.exp(-dist)
+            results.append((chunk, similarity_score))  # Add the Chunk and its similarity score to results.
 
         return results
 

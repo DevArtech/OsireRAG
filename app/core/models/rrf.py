@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from typing import List, Tuple
 
 from app.core.models.chunker import Chunk
-
+from app.core.logger import logger
 
 class ReciprocalRankFusion(BaseModel):
     """
@@ -35,18 +35,19 @@ class ReciprocalRankFusion(BaseModel):
     """
 
     def ranks(
-        self, ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int = 10
+        self, ranks: List[List[Tuple[Chunk, float]]], k: int = 60, n: int = 10, threshold: float | None = None
     ) -> List[Tuple[Chunk, float]]:
         """
         Combines rankings from multiple rankers using the RRF algorithm.
 
         Args:
-        - `ranks (List[List[Tuple[Chunk, float]]])`: A list of ranked document lists, where each document is paired with its sapp.core.
+        - `ranks (List[List[Tuple[Chunk, float]]])`: A list of ranked document lists, where each document is paired with its score.
         - `k (int)`: The RRF parameter for scaling the rank contribution. Default is 60.
         - `n (int)`: The maximum number of ranked results to return. Default is 10.
+        - `threshold (float | None)`: Optional threshold to filter results by score. Default is None.
 
         Returns:
-        - List[Tuple[Chunk, float]]: A list of the top `n` documents, paired with their scores.
+        - List[Tuple[Chunk, float]]: A list of the top `n` documents, paired with their normalized RRF scores.
 
         Raises:
         - ValueError: If the input ranks list is empty.
@@ -61,36 +62,54 @@ class ReciprocalRankFusion(BaseModel):
         Date: 10/24/2024
         """
 
-        rrf_scores = {}
+        # Dictionary to track RRF scores: {doc_id: (doc, rrf_score)}
+        doc_info = {}
 
         # Iterate over each ranking list
         for rank_list in ranks:
-            for position, doc in enumerate(rank_list):
-                if isinstance(doc, tuple):  # Handle tuples containing Chunk and score
-                    doc, score = doc
-
-                # Check if the document is already in the scores dictionary
-                found = False
-                original_score = 0
-                for existing_doc, existing_score in rrf_scores.keys():
-                    if existing_doc == doc:
-                        found = True
-                        original_score = existing_score
-                        break
-
-                # Add the document with an initial score or update its RRF score
-                if not found:
-                    rrf_scores[(doc, score)] = 0
+            for position, item in enumerate(rank_list):
+                doc, score = item  # Unpack the tuple containing Chunk and score
+                
+                doc_id = id(doc)  # Use object id as a unique identifier
+                
+                # If the document has not been seen yet, add it
+                if doc_id not in doc_info:
+                    doc_info[doc_id] = (doc, 1 / (k + position + 1))
                 else:
-                    rrf_scores[(doc, original_score)] += 1 / (k + position + 1)
+                    # Update RRF score for existing document
+                    _, rrf_score = doc_info[doc_id]
+                    doc_info[doc_id] = (doc, rrf_score + 1 / (k + position + 1))
 
-        # Sort documents by their aggregated RRF scores
-        sorted_scores = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+        # Get all documents and their RRF scores
+        all_docs = list(doc_info.values())
+        
+        # Normalize RRF scores to be between 0 and 1
+        if all_docs:
+            max_score = max(score for _, score in all_docs)
+            min_score = min(score for _, score in all_docs)
+            score_range = max_score - min_score
+            
+            if score_range > 0:
+                normalized_docs = [(doc, (score - min_score) / score_range) for doc, score in all_docs]
+            else:
+                normalized_docs = [(doc, 1.0) for doc, _ in all_docs]
+        else:
+            normalized_docs = []
 
-        # Extract the documents with their original scores
-        chunks_with_original_scores = [
-            scored_chunk for scored_chunk, _ in sorted_scores
-        ]
+        # Sort documents by their normalized RRF scores
+        sorted_docs = sorted(normalized_docs, key=lambda x: x[1], reverse=True)
 
-        # Return the top `n` documents
-        return chunks_with_original_scores[:n]
+        # Extract the documents with their normalized RRF scores
+        result = []
+        
+        if threshold:
+            # Filter by threshold on normalized RRF score
+            result = [(doc, rrf_score) for doc, rrf_score in sorted_docs 
+                        if rrf_score >= threshold][:n]
+        else:
+            # Just return top n with normalized RRF score
+            result = [(doc, rrf_score) for doc, rrf_score in sorted_docs][:n]
+
+        # Return the top `n` documents with their normalized RRF scores
+        logger.info(f"RRF results: {[f'{doc.content[:100]} - {rrf_score}\n' for doc, rrf_score in result]}")
+        return result

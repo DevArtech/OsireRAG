@@ -22,15 +22,22 @@ import os
 os.makedirs("./.osirerag", exist_ok=True)
 
 import gradio as gr
-from fastapi import FastAPI, status, Form
-from fastapi.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
+from fastapi import FastAPI, status
+from fastapi.responses import Response
 
 from app.api.api import api_router
 from app.core.logger import logger
-from app.core.interface.gradio import io
 from app.core.settings import get_settings
-from app.core.middleware.token_validator import TokenValidationMiddleware, validate_token
+from app.core.models.knowledge_base import KnowledgeBase
+from app.core.middleware.token_validator import TokenValidationMiddleware
 
+# Check if the .osirerag directory is empty and create default project if needed
+if not os.listdir("./.osirerag"):
+    logger.info("Creating default project in .osirerag directory")
+    KnowledgeBase().create_kb("default", "vectorstore", "kw_model")
+    logger.info("Default project created successfully")
+
+from app.core.interface.gradio import io
 
 # Set the hpc path based on the environment
 if get_settings().ENVIRONMENT == "local":

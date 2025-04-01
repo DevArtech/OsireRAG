@@ -20,7 +20,7 @@ RUN pipenv requirements > requirements.txt && \
 
 # Download NLP models
 RUN python -m spacy download en_core_web_sm && \
-    python -m nltk.downloader -d /usr/share/nltk_data punkt stopwords wordnet
+    python -m nltk.downloader -d /usr/share/nltk_data punkt punkt_tab stopwords wordnet
 
 # Final stage
 FROM ghcr.io/abetlen/llama-cpp-python:v0.3.1

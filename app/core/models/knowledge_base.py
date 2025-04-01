@@ -23,7 +23,7 @@ import time
 from pydantic import BaseModel
 from dataclasses import dataclass, field
 from fastapi import UploadFile
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 
 from app.core.logger import logger
 from app.core.models.documents import Document
@@ -46,6 +46,8 @@ class SearchParameters:
     - n_results: int: The number of results to return.
     - filter: Dict[str, Any]: A filter for the search.
     - rerank: bool: Whether to rerank the results.
+    - allow_no_results: bool: Whether to allow no results.
+    - threshold: Optional[float]: Minimum similarity score for retrieved documents.
 
     Methods:
     - None
@@ -61,6 +63,8 @@ class SearchParameters:
     n_results: int = 10
     filter: Dict[str, Any] = field(default_factory=dict)
     rerank: bool = True
+    allow_no_results: bool = True
+    threshold: Optional[float] = None
 
 
 @dataclass
@@ -424,11 +428,29 @@ class KnowledgeBase(BaseModel):
         start_time = time.time()
 
         # Validate the project
-        _, vs_path, _ = self._validate_project(
+        project_path, vs_path, _ = self._validate_project(
             project_name, vectorstore_name, model_name
         )
 
         # Load the vectorstore, token chunks, and BM25 model
+        chunks = []
+        
+        # Get all files and directories in the project path
+        if os.path.exists(project_path):
+            all_items = os.listdir(project_path)
+            # Filter out the vectorstore and model directories
+            non_model_items = [item for item in all_items 
+                              if item != vectorstore_name and item != model_name]
+            
+            if not non_model_items and params.allow_no_results:
+                return []
+            elif not non_model_items:
+                raise ValueError(
+                    f"No documents found in project '{project_name}'. Please add documents before searching."
+                )
+        else:
+            raise ValueError(f"Project directory '{project_path}' does not exist.")
+
         vectorstore = self.vs_manager.load_vectorstore(vs_path)
         token_chunks, bm25_model = self.bm25.load_model(project_name, model_name)
 
@@ -448,10 +470,10 @@ class KnowledgeBase(BaseModel):
         )
 
         # Rank the results using reciprocal rank fusion
-        chunks = self.rrf.ranks([faiss_chunks, keyword_chunks], n=params.n_results)
+        chunks = self.rrf.ranks([faiss_chunks, keyword_chunks], n=params.n_results, threshold=params.threshold)
 
         # Rerank the results if necessary
-        if params.rerank:
+        if params.rerank and chunks:
             chunks = self.reranker.cross_encode_rerank(
                 params.query, [chunk for chunk, score in chunks]
             )

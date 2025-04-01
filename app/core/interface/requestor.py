@@ -10,7 +10,7 @@ Functions:
 - new_knowledge_base(project: str, vs: str, model: str) -> dict: Creates a new knowledge base.
 - add_webpages(project: str, vs: str, model: str, urls: str) -> None: Adds webpages to the knowledge base.
 - add_documents(project: str, vs: str, model: str, documents: List[str]) -> None: Adds documents to the knowledge base.
-- query(project: str, vs: str, model: str, query: str, history: Optional[List[Dict[str, str]]] = None, n_results: int = 10, rerank: bool = True) -> Iterator[str]: Queries the knowledge base for an LLM response.
+- query(project: str, vs: str, model: str, query: str, history: Optional[List[Dict[str, str]]] = None, n_results: int = 10, rerank: bool = True, temperature: float = 0.7, allow_no_results: bool = False, threshold: float = None) -> Iterator[str]: Queries the knowledge base for an LLM response.
 
 Usage:
 - Import the functions from this module into your Gradio application.
@@ -155,6 +155,7 @@ def add_documents(
     Author: Adam Haile
     Date: 10/20/2024
     """
+    print(f"{project}, {vs}, {model}, {documents}, {n}, {char_len}, {overlap}, {k1}, {b}, {epsilon}")
     if documents:
         # Read the documents into a bytestream and create a list of UploadFile objects
         files = [
@@ -198,6 +199,9 @@ def query(
     history: Optional[List[Dict[str, str]]] = None,
     n_results: int = 10,
     rerank: bool = True,
+    temperature: float = 0.7,
+    allow_no_results: bool = True,
+    threshold: float = None
 ) -> Iterator[str]:
     """
     Queries the knowledge base for an LLM response.
@@ -210,6 +214,9 @@ def query(
     - `history (Optional[List[Dict[str, str]]])`: The conversation history.
     - `n_results (int)`: Number of results to return from search.
     - `rerank (bool)`: Whether to rerank the search results.
+    - `temperature (float)`: The temperature for the model's generation.
+    - `allow_no_results (bool)`: Whether to allow an empty response if no documents are found.
+    - `threshold (float)`: Minimum similarity score for retrieved documents (None = no threshold).
 
     Returns:
     - Iterator[str]: A generator that yields the LLM response.
@@ -231,10 +238,13 @@ def query(
             query=query,
             n_results=n_results,
             filter={},
-            rerank=rerank
+            rerank=rerank,
+            allow_no_results=allow_no_results,
+            threshold=threshold
         ),
         stream=True,
         conversation_history=history,
+        temperature=temperature,
     )
 
     # Yield each chunk as it's received from the RAGPrompt generator

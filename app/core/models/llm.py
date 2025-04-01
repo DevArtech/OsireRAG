@@ -173,6 +173,7 @@ class LLM(BaseModel):
         prompt: str,
         max_length: int = 128000,
         history: Optional[List[Dict[str, str]]] = None,
+        temperature: float = 0.7,
     ) -> Iterator[str]:
         """
         Prompts the LLM model with a given prompt and streams the output.
@@ -180,6 +181,8 @@ class LLM(BaseModel):
         Args:
         - `prompt (str)`: The prompt to send to the LLM model.
         - `max_length (int)`: The maximum length of the output.
+        - `history (Optional[List[Dict[str, str]]])`: The conversation history.
+        - `temperature (float)`: The temperature for the model's generation.
 
         Returns:
         - Iterator[str]: The output from the LLM model.
@@ -219,6 +222,7 @@ class LLM(BaseModel):
                 stop=["Query:"],
                 echo=True,
                 stream=True,
+                temperature=temperature,
             ):
                 yield token["choices"][0]["text"]
         else:
@@ -240,6 +244,7 @@ class LLM(BaseModel):
                 messages=full_messages,
                 max_tokens=max_length - tokens_used,
                 stream=True,
+                temperature=temperature,
             ):
                 if token.choices[0].delta.content:
                     yield token.choices[0].delta.content

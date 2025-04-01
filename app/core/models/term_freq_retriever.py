@@ -252,7 +252,7 @@ class BM25Model(BaseModel):
         - `k (int)`: The number of top results to return.
 
         Returns:
-        - List[Tuple[Chunk, float]]: A list of document chunks and their scores.
+        - List[Tuple[Chunk, float]]: A list of document chunks and their normalized BM25 scores.
 
         Usage:
         - `results = bm25.search(tokenized_query, bm25_model, tokenized_chunks, k=10)`
@@ -262,9 +262,30 @@ class BM25Model(BaseModel):
         """
         # Perform the BM25 search
         scores = model.get_scores(tokenized_query)
-
-        # Sort the chunks by score and return the top k results
+        
+        # Convert chunks to regular Chunk objects
         chunks = [Chunk(**chunk.model_dump()) for chunk in chunks]
-        scored_docs = [(chunk, score) for chunk, score in zip(chunks, scores)]
-        scored_docs.sort(key=lambda x: x[1])
-        return scored_docs[::-1][:k]
+        
+        # Create list of (chunk, score) pairs
+        scored_docs = list(zip(chunks, scores))
+        
+        # Sort by score in descending order (higher scores first)
+        scored_docs.sort(key=lambda x: x[1], reverse=True)
+        
+        # Take top k results
+        top_k = scored_docs[:k]
+        
+        # Normalize scores to be between 0 and 1
+        if top_k:
+            max_score = top_k[0][1]
+            min_score = top_k[-1][1]
+            score_range = max_score - min_score
+            
+            if score_range > 0:
+                normalized_docs = [(doc, (score - min_score) / score_range) for doc, score in top_k]
+            else:
+                normalized_docs = [(doc, 1.0) for doc, _ in top_k]
+        else:
+            normalized_docs = []
+            
+        return normalized_docs

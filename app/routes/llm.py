@@ -69,6 +69,8 @@ class RAGPrompt(BaseModel):
     - model_name (str): The name of the model.
     - params (SearchParameters): The search parameters.
     - stream (bool): Whether to stream the response.
+    - conversation_history (Optional[List[Dict[str, str]]]): The conversation history.
+    - temperature (Optional[float]): The temperature for the model.
 
     Methods:
     - None
@@ -83,6 +85,7 @@ class RAGPrompt(BaseModel):
     params: SearchParameters
     stream: bool = False
     conversation_history: Optional[List[Dict[str, str]]] = None
+    temperature: Optional[float] = 0.7
 
     def __init__(self, **data: Any) -> None:
         """
@@ -144,11 +147,9 @@ def craft_rag_prompt(prompt: RAGPrompt) -> Tuple[str, List[Tuple[Chunk, float]]]
 
     # Craft the new RAG prompt
     new_prompt = textwrap.dedent(
-        """Contextual Information is below:
-            ------------------------------------------
+        """------------------------------------------
             {}
             ------------------------------------------
-            Use the context information, and not prior knowledge, to answer the query prompted by the user.
             """.format("\n\n".join(doc[0].content for doc in documents))
     )
 
@@ -200,7 +201,7 @@ def rag_prompt(prompt: RAGPrompt) -> Iterator[str]:
     # Prompt the LLM and yield the results
     response = ""
     generator = llm.stream_prompt(
-        contextual_prompt, history=prompt.conversation_history
+        contextual_prompt, history=prompt.conversation_history, temperature=prompt.temperature
     )
     for item in generator:
         yield item.replace('"', '\\"')

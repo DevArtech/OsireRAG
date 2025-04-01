@@ -24,16 +24,17 @@ openai = "*"
 black = "*"
 flake8 = "*"
 uvicorn = "*"
-llama-cpp-python = "*"
 pdoc = "*"
 ipykernel = "*"
+pytest = "*"
+llama-cpp-python = {version = "*", optional = true}
 
 [requires]
 python_version = "3.12"
 
 [scripts]
 start = "uvicorn app.main:app --reload --port 8080 --host localhost"
-test = "python -m pytest tests/unit.py"
+test = "python -m pytest tests/run_tests.py"
 format = "python -m black ."
 lint = "python -m flake8 src"
 docs = "docs.sh"

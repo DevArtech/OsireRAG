@@ -17,7 +17,7 @@ Author: Adam Haile
 Date: 10/9/2024
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, ClassVar
 from sentence_transformers import SentenceTransformer
 
@@ -64,10 +64,10 @@ class DocumentEmbedder(BaseModel):
     Date: 10/9/2024
     """
 
+    # Use ConfigDict to replace the deprecated Config class
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     hf: ClassVar[SentenceTransformer] = None
-
-    class Config:
-        arbitrary_types_allowed = True
 
     def __init__(self):
         """
@@ -92,11 +92,8 @@ class DocumentEmbedder(BaseModel):
         )
         # Initialize the HuggingFaceEmbeddings object
         DocumentEmbedder.hf = SentenceTransformer(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={  
-                "device": get_settings().DEVICE if get_settings().DEVICE else "cuda"
-            },
-            encode_kwargs={"normalize_embeddings": False},
+            model_name_or_path="sentence-transformers/all-MiniLM-L6-v2",
+            device=get_settings().DEVICE if get_settings().DEVICE else "cuda"
         )
         logger.info(f"{COLORS().INFO}Embedding Model Initialized{COLORS().RESET}")
 

@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     MODEL_PATH: str = "/home/hailea/Llama-3.2-3B-Instruct.gguf"
     HPC_LLM: str = "http://dh-dgxh100-2.hpc.msoe.edu:8000/v1"
     TOKENIZER_PATH: str = os.path.abspath("./app/models/tokenizer.pkl")
-    REMOTE_MODEL: str = "meta-llama/Llama-3.3-70B-Instruct"
+    REMOTE_MODEL: str = "meta/llama-3.3-70b-instruct"
 
     class Config:
         env_file = ".env"
